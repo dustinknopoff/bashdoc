@@ -44,6 +44,7 @@
 //! These can be modifed in the code to your preference.
 //!
 extern crate colored;
+extern crate dirs;
 
 use colored::*;
 use std::collections::HashMap;
@@ -181,7 +182,9 @@ impl AllDocs {
 ///
 /// A final `Vec` of the collected comment strings is returned.
 pub fn get_info() -> Vec<Vec<String>> {
-    let f = File::open("/Users/Dustin/.zshrc").unwrap();
+    let mut p = dirs::home_dir().unwrap();
+    p.push(".zshrc");
+    let f = File::open(&p).unwrap();
     let f = BufReader::new(f);
     let mut result: Vec<Vec<String>> = Vec::new();
     result.push(Vec::new());
