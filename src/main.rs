@@ -74,7 +74,7 @@ impl Doc {
 
     /// # Build a `Doc` from an array of strings
     /// Parse `Doc` fields.
-    pub fn to_bash_doc(vector: Vec<String>) -> Doc {
+    pub fn make_doc(vector: &[String]) -> Doc {
         let mut result = Doc::default();
         for line in vector.iter() {
             if line == &vector[0] {
@@ -120,18 +120,12 @@ impl Doc {
 }
 
 /// # Represents all documentation in a file
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct AllDocs {
     thedocs: Vec<Doc>,
 }
 
 impl AllDocs {
-    pub fn new() -> AllDocs {
-        AllDocs {
-            thedocs: Vec::new(),
-        }
-    }
-
     /// Append the given `Doc` to this `AllDoc`
     pub fn add(&mut self, doc: Doc) -> () {
         self.thedocs.push(doc);
@@ -174,10 +168,9 @@ impl AllDocs {
     /// runner - location, filename: This is the beginning
     /// ```
     pub fn colorize(&self) -> () {
-        println!("{:#?}", self.thedocs);
         println!("{}", "Help".green().underline());
 
-        for doc in self.thedocs.iter() {
+        for doc in &self.thedocs {
             let mut params: Vec<_> = doc.params.keys().map(|x| x.to_string()).collect();
             let as_string = params.join(", ");
             print!("{}", doc.short_description.replace("()", "").blue().bold());
@@ -188,11 +181,7 @@ impl AllDocs {
             }
             if !doc.descriptors.is_empty() {
                 for sub in doc.descriptors.keys() {
-                    println!(
-                        "\t{} {}",
-                        sub.yellow().bold(),
-                        doc.descriptors.get(sub).unwrap()
-                    )
+                    println!("\t{} {}", sub.yellow().bold(), &doc.descriptors[sub])
                 }
             }
         }
@@ -236,12 +225,12 @@ pub fn get_info() -> Vec<Vec<String>> {
 fn main() {
     let docs = get_info();
     // println!("{:#?}", docs);
-    let mut all_docs = AllDocs::new();
-    for doc in docs.iter() {
+    let mut all_docs: AllDocs = Default::default();
+    for doc in &docs {
         if doc.to_vec().is_empty() {
             continue;
         }
-        let as_bash_doc = Doc::to_bash_doc(doc.to_vec());
+        let as_bash_doc = Doc::make_doc(&doc.to_vec());
         all_docs.add(as_bash_doc);
     }
     all_docs.colorize();
