@@ -1,4 +1,4 @@
-//! # DocGen
+//! # BashDoc
 //!
 //! A tool for generating documentation/help menu for user defined bash functions.
 //!
@@ -6,13 +6,42 @@
 //!
 //! ### Example
 //!
-//! ```
+//! ```bash
 //! #;
 //! # cd()
 //! # moves to given directory
 //! # @param directory: folder to move to
 //! # @return void
+//! #"
+//! cd() {
+//!     cd $1
+//! }
 //! ```
+//!
+//! Outputs
+//!
+//! ```
+//! Help
+//! cd - directory: moves to given directory
+//! ```
+//!
+//! with lots of color!
+//!
+//! ### Global Delimiters
+//!
+//! `START_DELIM = #;`
+//!
+//! `END_DELIM = #"`
+//!
+//! `PAR_DELIM = @param`
+//!
+//! `RET_DELIM = @return`
+//!
+//! `OPT_DELIM = # -`
+//!
+//! `COMM_DELIM = # `
+//!
+//! These can be modifed in the code to your preference.
 //!
 extern crate colored;
 
@@ -27,6 +56,7 @@ const END_DELIM: &str = "#\"";
 const PAR_DELIM: &str = "@param";
 const RET_DELIM: &str = "@return";
 const OPT_DELIM: &str = "# -";
+const COMM_DELIM: &str = "# ";
 
 /// Represents a docstring
 /// contains:
@@ -36,7 +66,7 @@ const OPT_DELIM: &str = "# -";
 /// - `HashMap` of options to their descriptions
 /// - `HashMap` of parameters to their descriptions
 /// - `HashMap` of return values to their descriptions
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Doc {
     short_description: String,
     long_description: String,
@@ -46,36 +76,10 @@ pub struct Doc {
 }
 
 impl Doc {
-    // fn new(
-    //     short: String,
-    //     long: String,
-    //     pars: HashMap<String, String>,
-    //     ret: HashMap<String, String>,
-    // ) -> Doc {
-    //     Doc {
-    //         short_description: short,
-    //         long_description: long,
-    //         params: pars,
-    //         returns: ret,
-    //     }
-    // }
-
-    /// # Builds a default, initialized `Doc`
-    /// All fields are initialized to their respective types' `::new()` method.
-    pub fn default() -> Self {
-        Doc {
-            short_description: String::new(),
-            long_description: String::new(),
-            descriptors: HashMap::new(),
-            params: HashMap::new(),
-            returns: HashMap::new(),
-        }
-    }
-
     /// # Build a `Doc` from an array of strings
     /// Parse `Doc` fields.
     pub fn make_doc(vector: &[String]) -> Doc {
-        let mut result = Doc::default();
+        let mut result: Doc = Default::default();
         for line in vector.iter() {
             if line == &vector[0] {
                 result.short_description.push_str(line);
@@ -99,24 +103,6 @@ impl Doc {
         }
         result
     }
-
-    // fn validate(vector: Vec<String>) -> bool {
-    //     let length = vector.len();
-    //     if vector[1].contains("@params") {
-    //         for line in vector[1..length - 1] {
-    //             if !line.contains("@params") {
-    //                 return false;
-    //             }
-    //         }
-    //     } else {
-    //         for line in vector[2..length - 1] {
-    //             if !line.contains("@params") {
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //     true
-    // }
 }
 
 /// # Represents all documentation in a file
@@ -188,7 +174,7 @@ impl AllDocs {
     }
 }
 
-/// Gets all `#;->#"` comments in the zshrc
+/// Gets all `START_DELIM->END_DELIM` comments in the zshrc
 ///
 /// This goes through every line finding the start of the docstring
 /// and adds every line to a `Vec` until the end delimiter.
@@ -215,7 +201,7 @@ pub fn get_info() -> Vec<Vec<String>> {
             if curr_line.contains("# -") {
                 result[index].push(curr_line);
             } else {
-                result[index].push(curr_line.replace("# ", ""));
+                result[index].push(curr_line.replace(COMM_DELIM, ""));
             }
         }
     }
