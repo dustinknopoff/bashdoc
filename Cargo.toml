@@ -1,5 +1,5 @@
 [package]
-name = "BashDoc"
+name = "bashdoc"
 version = "0.1.0"
 authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
 

@@ -20,10 +20,7 @@ cd() {
 
 Outputs
 
-```
-Help
-cd - directory: moves to given directory
-```
+![](./demo.png)
 
 with lots of color!
 

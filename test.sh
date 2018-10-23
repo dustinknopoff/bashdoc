@@ -1,19 +1,9 @@
-#; 
-# runner()
-# This is the beginning
-# - CTRL-O pushs the boundaries
+#;
+# cd()
+# moves to given directory
+# @param directory: folder to move to
+# @return void
 #"
-runner() {
-    ls
-}
-
-#; 
-# runner()
-# This is the beginning
-# @params filename: don't test me
-# @params location: where to put it
-# @returns nothing:
-#"
-runner() {
-    ls
+cd() {
+    cd $1
 }
