@@ -1,0 +1,7 @@
+[package]
+name = "bashdoc"
+version = "0.1.0"
+authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
+
+[dependencies]
+colored = "1.6"
