@@ -181,7 +181,7 @@ impl AllDocs {
 ///
 /// A final `Vec` of the collected comment strings is returned.
 pub fn get_info() -> Vec<Vec<String>> {
-    let f = File::open("./test.sh").unwrap();
+    let f = File::open("/Users/Dustin/.zshrc").unwrap();
     let f = BufReader::new(f);
     let mut result: Vec<Vec<String>> = Vec::new();
     result.push(Vec::new());
