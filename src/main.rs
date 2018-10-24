@@ -201,7 +201,7 @@ pub fn get_info() -> Vec<Vec<String>> {
             result.push(Vec::new());
         }
         if can_add {
-            if curr_line.contains("# -") {
+            if curr_line.contains(OPT_DELIM) {
                 result[index].push(curr_line);
             } else {
                 result[index].push(curr_line.replace(COMM_DELIM, ""));
