@@ -39,3 +39,11 @@ with lots of color!
 `COMM_DELIM = #`
 
 These can be modifed in the code to your preference.
+
+## Install
+
+```bash
+git clone https://github.com/dustinknopoff/bashdoc
+cd bashdoc
+cargo install
+```
