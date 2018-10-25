@@ -184,14 +184,14 @@ impl AllDocs {
 pub fn get_info() -> Vec<Vec<String>> {
     let mut p = dirs::home_dir().unwrap();
     p.push(".zshrc");
-    let f = File::open(&p).unwrap();
+    let f = File::open(&p).expect("file not found.");
     let f = BufReader::new(f);
     let mut result: Vec<Vec<String>> = Vec::new();
     result.push(Vec::new());
     let mut can_add = false;
     let mut index = 0;
     for line in f.lines() {
-        let curr_line = line.unwrap();
+        let curr_line = line.expect("Line cannot be accessed.");
         if curr_line.contains(START_DELIM) {
             can_add = true;
             continue;
