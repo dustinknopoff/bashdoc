@@ -42,6 +42,10 @@ These can be modifed in the code to your preference.
 
 ## Install
 
+**NOTE: Must be on Rust v1.30**
+
+_update with `rustup update stable`__
+
 ```bash
 git clone https://github.com/dustinknopoff/bashdoc
 cd bashdoc
