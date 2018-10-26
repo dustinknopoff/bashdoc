@@ -45,12 +45,20 @@
 //!
 extern crate colored;
 extern crate dirs;
+extern crate glob;
+extern crate rayon;
+#[macro_use]
+extern crate clap;
+use clap::App;
 
 use colored::*;
+use glob::glob;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::path::Path;
 
 const START_DELIM: &str = "#;";
 const END_DELIM: &str = "#\"";
@@ -110,6 +118,7 @@ impl Doc {
 #[derive(Debug, Default)]
 pub struct AllDocs {
     thedocs: Vec<Doc>,
+    filename: String,
 }
 
 impl AllDocs {
@@ -155,8 +164,6 @@ impl AllDocs {
     /// runner - location, filename: This is the beginning
     /// ```
     pub fn colorize(&self) -> () {
-        println!("{}", "Help".green().underline());
-
         for doc in &self.thedocs {
             let mut params: Vec<_> = doc.params.keys().map(|x| x.to_string()).collect();
             let as_string = params.join(", ");
@@ -173,6 +180,24 @@ impl AllDocs {
             }
         }
     }
+
+    pub fn printer(&self) -> () {
+        for doc in &self.thedocs {
+            let mut params: Vec<_> = doc.params.keys().map(|x| x.to_string()).collect();
+            let as_string = params.join(", ");
+            print!("{}", doc.short_description.replace("()", ""));
+            if doc.params.is_empty() {
+                println!(": {}", doc.long_description);
+            } else {
+                println!(" - {}: {}", as_string, doc.long_description);
+            }
+            if !doc.descriptors.is_empty() {
+                for sub in doc.descriptors.keys() {
+                    println!("\t{} {}", sub, &doc.descriptors[sub])
+                }
+            }
+        }
+    }
 }
 
 /// Gets all `START_DELIM->END_DELIM` comments in the zshrc
@@ -181,9 +206,9 @@ impl AllDocs {
 /// and adds every line to a `Vec` until the end delimiter.
 ///
 /// A final `Vec` of the collected comment strings is returned.
-pub fn get_info() -> Vec<Vec<String>> {
-    let mut p = dirs::home_dir().unwrap();
-    p.push(".zshrc");
+pub fn get_info(p: &Path) -> Vec<Vec<String>> {
+    // let mut p = dirs::home_dir().unwrap();
+    // p.push(".zshrc");
     let f = File::open(&p).expect("file not found.");
     let f = BufReader::new(f);
     let mut result: Vec<Vec<String>> = Vec::new();
@@ -212,15 +237,78 @@ pub fn get_info() -> Vec<Vec<String>> {
 }
 
 fn main() {
-    let docs = get_info();
+    let yaml = load_yaml!("../cli.yml");
+    let matches = App::from_yaml(yaml).get_matches();
+    if matches.is_present("directory") {
+        let dir = matches
+            .value_of("directory")
+            .unwrap()
+            .replace("~", dirs::home_dir().unwrap().to_str().unwrap());
+        let files: Vec<_> = glob(&dir).unwrap().filter_map(|x| x.ok()).collect();
+        let every_doc: Vec<AllDocs> = files
+            .par_iter()
+            .map(|entry| {
+                let docs = get_info(&entry);
+                generate(
+                    &docs,
+                    entry
+                        .file_name()
+                        .unwrap()
+                        .clone()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                )
+            }).collect();
+        for doc in every_doc {
+            if matches.is_present("color") {
+                println!("Help: {}", doc.filename);
+                doc.printer();
+            } else {
+                println!(
+                    "{}: {}",
+                    "Help".green().underline(),
+                    doc.filename.green().underline()
+                );
+                doc.colorize();
+            }
+        }
+    } else {
+        let dir = matches
+            .value_of("INPUT")
+            .expect("Enter a valid file")
+            .replace("~", dirs::home_dir().unwrap().to_str().unwrap());
+        let docs = get_info(&Path::new(&dir));
+        let all_docs = generate(
+            &docs,
+            Path::new(&dir)
+                .file_name()
+                .unwrap()
+                .clone()
+                .to_str()
+                .unwrap()
+                .to_string(),
+        );
+        if matches.is_present("color") {
+            println!("Help");
+            all_docs.printer();
+        } else {
+            println!("{}", "Help".green().underline());
+            all_docs.colorize();
+        }
+    }
     // println!("{:#?}", docs);
+}
+
+fn generate(docs: &Vec<Vec<String>>, fname: String) -> AllDocs {
     let mut all_docs: AllDocs = Default::default();
-    for doc in &docs {
+    all_docs.filename = fname;
+    for doc in docs.iter() {
         if doc.to_vec().is_empty() {
             continue;
         }
         let as_bash_doc = Doc::make_doc(&doc.to_vec());
         all_docs.add(as_bash_doc);
     }
-    all_docs.colorize();
+    return all_docs;
 }
