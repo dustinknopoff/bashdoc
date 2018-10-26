@@ -12,12 +12,6 @@ pub mod docs {
     use std::io::BufReader;
     use std::path::Path;
 
-    const START_DELIM: &str = "#;";
-    const END_DELIM: &str = "#\"";
-    const PAR_DELIM: &str = "@param";
-    const RET_DELIM: &str = "@return";
-    const OPT_DELIM: &str = "# -";
-    const COMM_DELIM: &str = "# ";
     /// Represents a docstring
     /// contains:
     ///
@@ -39,19 +33,20 @@ pub mod docs {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
         pub fn make_doc(vector: &[String]) -> Doc {
+            let delims: Delimiters = get_delims();
             let mut result: Doc = Default::default();
             for line in vector.iter() {
                 if line == &vector[0] {
                     result.short_description.push_str(line);
-                } else if line.contains(PAR_DELIM) {
+                } else if line.contains(delims.params.as_str()) {
                     let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
                     let rest: String = splitted[2..].join(" ");
                     result.params.insert(splitted[1].replace(":", ""), rest);
-                } else if line.contains(RET_DELIM) {
+                } else if line.contains(delims.ret.as_str()) {
                     let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
                     let rest: String = splitted[2..].join(" ");
                     result.returns.insert(splitted[1].replace(":", ""), rest);
-                } else if line.contains(OPT_DELIM) {
+                } else if line.contains(delims.opt.as_str()) {
                     let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
                     let rest: String = splitted[3..].join(" ");
                     result
@@ -89,6 +84,7 @@ pub mod docs {
     fn get_info(p: &Path) -> Vec<Vec<String>> {
         // let mut p = dirs::home_dir().unwrap();
         // p.push(".zshrc");
+        let delims: Delimiters = get_delims();
         let f = File::open(&p).expect("file not found.");
         let f = BufReader::new(f);
         let mut result: Vec<Vec<String>> = Vec::new();
@@ -97,19 +93,19 @@ pub mod docs {
         let mut index = 0;
         for line in f.lines() {
             let curr_line = line.expect("Line cannot be accessed.");
-            if curr_line.contains(START_DELIM) {
+            if curr_line.contains(delims.start.as_str()) {
                 can_add = true;
                 continue;
-            } else if curr_line.contains(END_DELIM) {
+            } else if curr_line.contains(delims.end.as_str()) {
                 can_add = false;
                 index += 1;
                 result.push(Vec::new());
             }
             if can_add {
-                if curr_line.contains(OPT_DELIM) {
+                if curr_line.contains(delims.opt.as_str()) {
                     result[index].push(curr_line);
                 } else {
-                    result[index].push(curr_line.replace(COMM_DELIM, ""));
+                    result[index].push(curr_line.replace(delims.comm.as_str(), ""));
                 }
             }
         }
@@ -246,29 +242,29 @@ pub mod docs {
     }
 
     #[derive(Debug, Serialize, Deserialize)]
-    struct Delimiters<'a> {
-        start: &'a str,
-        end: &'a str,
-        params: &'a str,
-        ret: &'a str,
-        opt: &'a str,
-        comm: &'a str,
+    struct Delimiters {
+        start: String,
+        end: String,
+        params: String,
+        ret: String,
+        opt: String,
+        comm: String,
     }
 
-    impl Default for Delimiters<'static> {
-        fn default() -> Delimiters<'static> {
+    impl Default for Delimiters {
+        fn default() -> Delimiters {
             Delimiters {
-                start: "#;",
-                end: "#\"",
-                params: "@param",
-                ret: "@return",
-                opt: "# -",
-                comm: "# ",
+                start: "#;".to_string(),
+                end: "#\"".to_string(),
+                params: "@param".to_string(),
+                ret: "@return".to_string(),
+                opt: "# -".to_string(),
+                comm: "# ".to_string(),
             }
         }
     }
 
-    fn get_delims() -> Delimiters<'static> {
+    fn get_delims() -> Delimiters {
         let mut contents = String::new();
         match env::var_os("BASHDOC_CONFIG_PATH") {
             Some(val) => {
@@ -276,18 +272,19 @@ pub mod docs {
                 config
                     .read_to_string(&mut contents)
                     .expect("could not read from file.");
-                let to_convert = contents.to_string();
-                let sorted: Delimiters = toml::from_str(&to_convert).unwrap();
+                let mut to_convert = String::new();
+                to_convert.push_str(&contents);
+                let sorted: Delimiters = toml::from_str(&to_convert.as_str()).unwrap();
                 sorted
             }
             None => {
-                let mut delims = Delimiters::default();
+                let mut delimiters = Delimiters::default();
                 let content =
-                    toml::to_string_pretty(&delims).expect("Could not be converted to TOML");
+                    toml::to_string_pretty(&delimiters).expect("Could not be converted to TOML");
                 let mut path = home_dir().unwrap();
                 path.push(".bashdocrc");
                 fs::write(path.to_str().unwrap(), content).unwrap();
-                delims
+                delimiters
             }
         }
     }
