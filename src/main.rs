@@ -1,9 +1,12 @@
+extern crate clap;
 extern crate colored;
 extern crate dirs;
 extern crate glob;
 extern crate rayon;
-#[macro_use]
-extern crate clap;
+extern crate serde;
+extern crate serde_derive;
+extern crate serde_json;
+use clap::load_yaml;
 mod doc_structure;
 use clap::App;
 use doc_structure::docs::*;
@@ -19,11 +22,15 @@ fn main() {
     } else {
         start(matches.value_of("INPUT").expect("no file found."), false)
     };
-    for doc in &all_em {
-        if matches.is_present("color") {
-            colorize(doc);
-        } else {
-            printer(doc);
+    if matches.is_present("json") {
+        export_json(&all_em, matches.value_of("json").unwrap());
+    } else {
+        for doc in &all_em {
+            if matches.is_present("color") {
+                colorize(doc);
+            } else {
+                printer(doc);
+            }
         }
     }
 }

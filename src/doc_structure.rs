@@ -48,6 +48,7 @@ pub mod docs {
     use dirs::home_dir;
     use glob::glob;
     use rayon::prelude::*;
+    use serde_derive::*;
     use std::collections::HashMap;
     use std::fs::File;
     use std::io::prelude::*;
@@ -68,7 +69,7 @@ pub mod docs {
     /// - `HashMap` of options to their descriptions
     /// - `HashMap` of parameters to their descriptions
     /// - `HashMap` of return values to their descriptions
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, Serialize, Deserialize)]
     pub struct Doc {
         short_description: String,
         long_description: String,
@@ -108,7 +109,7 @@ pub mod docs {
     }
 
     /// # Represents all documentation in a file
-    #[derive(Debug, Default)]
+    #[derive(Debug, Default, Serialize, Deserialize)]
     pub struct DocFile {
         thedocs: Vec<Doc>,
         filename: String,
@@ -276,5 +277,14 @@ pub mod docs {
                 }
             }
         }
+    }
+
+    pub fn export_json(docstrings: &[DocFile], file_name: &str) {
+        let json = serde_json::to_string_pretty(&docstrings).expect("Could not convert to JSON");
+        let path_as_str = file_name.replace("~", home_dir().unwrap().to_str().unwrap());
+        let path = Path::new(&path_as_str);
+        let mut file = File::create(Path::new(&path)).expect("Invalid file path.");
+        file.write_all(&json.as_bytes())
+            .expect("Could not write to file.");
     }
 }

@@ -12,6 +12,12 @@ args:
       help: "pass a glob pattern to run on."
       long: directory
       short: d
+  - json:
+      help: "print result as JSON"
+      long: json
+      short: j
+      takes_value: true
+      value_name: FILE
 author: "Dustin Knopoff <dustinknopoff@gmail.com>"
 name: bashdoc
 version: "1.0"
