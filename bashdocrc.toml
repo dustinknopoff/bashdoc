@@ -1,0 +1,6 @@
+start = "#;"
+end = "#\""
+params = "@param"
+ret = "@return"
+opt = "# -"
+comm = "# "

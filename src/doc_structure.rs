@@ -5,6 +5,8 @@ pub mod docs {
     use rayon::prelude::*;
     use serde_derive::*;
     use std::collections::HashMap;
+    use std::env;
+    use std::fs;
     use std::fs::File;
     use std::io::prelude::*;
     use std::io::BufReader;
@@ -241,5 +243,52 @@ pub mod docs {
         let mut file = File::create(Path::new(&path)).expect("Invalid file path.");
         file.write_all(&json.as_bytes())
             .expect("Could not write to file.");
+    }
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct Delimiters<'a> {
+        start: &'a str,
+        end: &'a str,
+        params: &'a str,
+        ret: &'a str,
+        opt: &'a str,
+        comm: &'a str,
+    }
+
+    impl Default for Delimiters<'static> {
+        fn default() -> Delimiters<'static> {
+            Delimiters {
+                start: "#;",
+                end: "#\"",
+                params: "@param",
+                ret: "@return",
+                opt: "# -",
+                comm: "# ",
+            }
+        }
+    }
+
+    fn get_delims() -> Delimiters<'static> {
+        let mut contents = String::new();
+        match env::var_os("BASHDOC_CONFIG_PATH") {
+            Some(val) => {
+                let mut config = File::open(Path::new(&val)).expect("Invalid path");
+                config
+                    .read_to_string(&mut contents)
+                    .expect("could not read from file.");
+                let to_convert = contents.to_string();
+                let sorted: Delimiters = toml::from_str(&to_convert).unwrap();
+                sorted
+            }
+            None => {
+                let mut delims = Delimiters::default();
+                let content =
+                    toml::to_string_pretty(&delims).expect("Could not be converted to TOML");
+                let mut path = home_dir().unwrap();
+                path.push(".bashdocrc");
+                fs::write(path.to_str().unwrap(), content).unwrap();
+                delims
+            }
+        }
     }
 }

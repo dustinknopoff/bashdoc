@@ -51,6 +51,7 @@ extern crate rayon;
 extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
+extern crate toml;
 use clap::load_yaml;
 mod doc_structure;
 use clap::App;
