@@ -51,3 +51,27 @@ git clone https://github.com/dustinknopoff/bashdoc
 cd bashdoc
 cargo install
 ```
+
+## Usage
+
+```
+bashdoc 1.0
+Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
+formatting.
+
+USAGE:
+    bashdoc [FLAGS] [OPTIONS] <INPUT>
+
+FLAGS:
+    -c, --color        toggles color
+    -d, --directory    pass a glob pattern to run on.
+    -h, --help         Prints help information
+    -V, --version      Prints version information
+
+OPTIONS:
+    -j, --json <FILE>    print result as JSON
+
+ARGS:
+    <INPUT>    Sets the input file to use
+
+```
