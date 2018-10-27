@@ -52,9 +52,8 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
-use clap::load_yaml;
 mod doc_structure;
-use clap::App;
+use clap::{load_yaml, App};
 use doc_structure::docs::*;
 
 fn main() {
