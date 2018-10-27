@@ -44,7 +44,7 @@ These can be modifed in the code to your preference.
 
 **NOTE: Must be on Rust v1.30**
 
-_update with `rustup update stable`__
+_update with `rustup update stable`_
 
 ```bash
 git clone https://github.com/dustinknopoff/bashdoc
