@@ -29,6 +29,16 @@ pub mod docs {
         returns: HashMap<String, String>,
     }
 
+    impl PartialEq for Doc {
+        fn eq(&self, other: &Doc) -> bool {
+            self.short_description == other.short_description
+                && self.long_description == other.long_description
+                && self.descriptors == other.descriptors
+                && self.params == other.params
+                && self.returns == other.returns
+        }
+    }
+
     impl Doc {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
@@ -232,7 +242,7 @@ pub mod docs {
         }
     }
 
-    pub fn export_json(docstrings: &[DocFile], file_name: &str) {
+    pub fn to_json(docstrings: &[DocFile], file_name: &str) {
         let json = serde_json::to_string_pretty(&docstrings).expect("Could not convert to JSON");
         let path_as_str = file_name.replace("~", home_dir().unwrap().to_str().unwrap());
         let path = Path::new(&path_as_str);
@@ -286,6 +296,97 @@ pub mod docs {
                 fs::write(path.to_str().unwrap(), content).unwrap();
                 delimiters
             }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        macro_rules! map(
+        { $($key:expr => $value:expr),+ } => {
+                {
+                    let mut m = ::std::collections::HashMap::new();
+                    $(
+                        m.insert($key, $value);
+                    )+
+                    m
+                }
+            };
+        );
+
+        #[test]
+        fn make_doc() {
+            let input: &[String] = &vec![
+                "runner()".to_string(),
+                "This is the beginning".to_string(),
+                "@params filename: don\'t test me".to_string(),
+                "@params location: where to put it".to_string(),
+                "@returns nothing:".to_string(),
+            ];
+            let result = Doc::make_doc(&input);
+            let mut expected = Doc::default();
+            expected.short_description = "runner()".to_string();
+            expected.long_description = "This is the beginning".to_string();
+            expected.descriptors = HashMap::new();
+            expected.params = map!(
+                "location".to_string() => "where to put it".to_string(),
+                "filename".to_string() => "don\'t test me".to_string()
+                );
+            expected.returns = map!("nothing".to_string() => String::new());
+            assert_eq!(result, expected);
+        }
+
+        #[test]
+        fn docfile_add() {
+            let mut docfile = DocFile::default();
+            let mut expected = Doc::default();
+            expected.short_description = "runner()".to_string();
+            expected.long_description = "This is the beginning".to_string();
+            expected.descriptors = HashMap::new();
+            expected.params = map!(
+                "location".to_string() => "where to put it".to_string(),
+                "filename".to_string() => "don\'t test me".to_string()
+                );
+            expected.returns = map!("nothing".to_string() => String::new());
+
+            let mut result = Doc::default();
+            result.short_description = "runner()".to_string();
+            result.long_description = "This is the beginning".to_string();
+            result.descriptors = HashMap::new();
+            result.params = map!(
+                "location".to_string() => "where to put it".to_string(),
+                "filename".to_string() => "don\'t test me".to_string()
+                );
+            result.returns = map!("nothing".to_string() => String::new());
+            assert_eq!(0, docfile.thedocs.len());
+            docfile.add(expected);
+            assert_eq!(1, docfile.thedocs.len());
+            assert_eq!(result, docfile.thedocs[0]);
+        }
+
+        #[test]
+        fn test_get_info() {
+            let p = Path::new("example.sh");
+            let result = get_info(&p);
+            let expected: Vec<Vec<String>> = vec![
+                [
+                    "runner()".to_string(),
+                    "This is the beginning".to_string(),
+                    "# - CTRL-O pushs the boundaries".to_string(),
+                ]
+                    .to_vec(),
+                [
+                    "runner()".to_string(),
+                    "This is the beginning".to_string(),
+                    "@params filename: don\'t test me".to_string(),
+                    "@params location: where to put it".to_string(),
+                    "@returns nothing:".to_string(),
+                ]
+                    .to_vec(),
+                [].to_vec(),
+            ];
+            assert_eq!(expected, result);
         }
     }
 }

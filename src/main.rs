@@ -68,7 +68,7 @@ fn main() {
         start(matches.value_of("INPUT").expect("no file found."), false)
     };
     if matches.is_present("json") {
-        export_json(&all_em, matches.value_of("json").unwrap());
+        to_json(&all_em, matches.value_of("json").unwrap());
     } else {
         for doc in &all_em {
             if matches.is_present("color") {
