@@ -59,13 +59,23 @@ use doc_structure::docs::*;
 fn main() {
     let yaml = load_yaml!("../cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
+    let delims = if matches.is_present("override") {
+        Delimiters::override_delims(matches.value_of("override").unwrap().to_string())
+    } else {
+        Delimiters::get_delims()
+    };
     let all_em = if matches.is_present("directory") {
         start(
             matches.value_of("INPUT").expect("directory glob not found"),
             true,
+            delims,
         )
     } else {
-        start(matches.value_of("INPUT").expect("no file found."), false)
+        start(
+            matches.value_of("INPUT").expect("no file found."),
+            false,
+            delims,
+        )
     };
     if matches.is_present("json") {
         to_json(&all_em, matches.value_of("json").unwrap());
