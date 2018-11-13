@@ -38,11 +38,11 @@ with lots of color!
 
 `COMM_DELIM = #`
 
-These can be modifed in the code to your preference.
+These can be modifed in your `.bashdocrc`.
 
 ## Install
 
-**NOTE: Must be on Rust v1.30**
+**NOTE: Must be on Rust v1.30 or newer.**
 
 _update with `rustup update stable`_
 
