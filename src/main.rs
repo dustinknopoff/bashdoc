@@ -53,8 +53,6 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 extern crate toml;
-extern crate lazy_static;
-use lazy_static::lazy_static;
 mod doc_structure;
 use clap::{load_yaml, App};
 use doc_structure::docs::*;

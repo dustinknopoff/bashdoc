@@ -50,27 +50,43 @@ pub mod docs {
     named!(to_map<&str, HashMap<String, String>>,
     map_res!(take_until_and_consume!("\n"), as_map));
 
-    named!(x<&str, Doc>, 
-    do_parse!(
-        short_description: preceded!(take_until_and_consume!("# "), take_until_and_consume!("\n")) >>
-        long_description: opt!(preceded!(take_until_and_consume!("# "), take_until_and_consume!("\n"))) >>
-        descriptors: opt!(complete!(preceded!(take_until_and_consume!("# -"), to_map))) >>
-        params: opt!(complete!(preceded!(take_until_and_consume!("@param"), to_map))) >>
-        returns: opt!(complete!(preceded!(take_until_and_consume!("@return "), to_map))) >>
-        (Doc {
-            short_description: short_description.to_string(),
-            long_description: long_description.unwrap_or("").to_string(),
-            descriptors: descriptors.unwrap_or(HashMap::new()),
-            params: params.unwrap_or(HashMap::new()),
-            returns: returns.unwrap_or(HashMap::new()),
-        })
-    ));
+    fn parse_doc(input: &str, delims: Delimiters) -> IResult<&str, Doc> {
+        do_parse!(
+            short_description: preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n")) >>
+                long_description: opt!(preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n"))) >>
+                descriptors: opt!(complete!(preceded!(take_until_and_consume!(delims.opt), to_map))) >>
+                params: opt!(complete!(preceded!(take_until_and_consume!(delims.param), to_map))) >>
+                ret: opt!(complete!(preceded!(take_until_and_consume!(delims.ret), to_map))),
+                (Doc {
+                    short_description: short_description.to_string(),
+                    long_description: long_description.unwrap_or("").to_string(),
+                    descriptors: descriptors.unwrap_or(HashMap::new()),
+                    params: params.unwrap_or(HashMap::new()),
+                    returns: ret.unwrap_or(HashMap::new()),
+                }))
+    }
+
+//    named_args!(x<'a>(input: &'a str, delims: Delimiters)<&'a str, Doc>,
+//    do_parse!(
+//        short_description: preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n")) >>
+//        long_description: opt!(preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n"))) >>
+//        descriptors: opt!(complete!(preceded!(take_until_and_consume!(delims.opt), to_map))) >>
+//        params: opt!(complete!(preceded!(take_until_and_consume!(delims.param), to_map))) >>
+//        returns: opt!(complete!(preceded!(take_until_and_consume!(delims.ret), to_map))) >>
+//        (Doc {
+//            short_description: short_description.to_string(),
+//            long_description: long_description.unwrap_or("").to_string(),
+//            descriptors: descriptors.unwrap_or(HashMap::new()),
+//            params: params.unwrap_or(HashMap::new()),
+//            returns: returns.unwrap_or(HashMap::new()),
+//        })
+//    ));
 
     impl Doc {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
         pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
-            let result = x(&vector);
+            let result = parse_doc(&vector, delims);
             result.expect("Parsing error.").1
         }
     }
