@@ -2,6 +2,7 @@ pub mod docs {
     use colored::*;
     use dirs::home_dir;
     use glob::glob;
+    use nom::*;
     use rayon::prelude::*;
     use serde_derive::*;
     use std::collections::HashMap;
@@ -20,7 +21,7 @@ pub mod docs {
     /// - `HashMap` of options to their descriptions
     /// - `HashMap` of parameters to their descriptions
     /// - `HashMap` of return values to their descriptions
-    #[derive(Debug, Default, Serialize, Deserialize)]
+    #[derive(Debug, Default, Serialize, Deserialize, Clone)]
     pub struct Doc {
         short_description: String,
         long_description: String,
@@ -39,33 +40,38 @@ pub mod docs {
         }
     }
 
+    fn as_map(input: &str) -> Result<HashMap<String, String>, std::num::ParseIntError> {
+        let mut result = HashMap::new();
+        let parts: Vec<_> = input.split(":").collect();
+        result.insert(parts[0].to_string(), parts[1..].join("").to_string());
+        Ok(result)
+    }
+
+    named!(to_map<&str, HashMap<String, String>>,
+    map_res!(take_until_and_consume!("\n"), as_map));
+
+    named!(x<&str, Doc>, 
+    do_parse!(
+        short_description: preceded!(take_until_and_consume!("# "), take_until_and_consume!("\n")) >>
+        long_description: opt!(preceded!(take_until_and_consume!("# "), take_until_and_consume!("\n"))) >>
+        descriptors: opt!(complete!(preceded!(take_until_and_consume!("# -"), to_map))) >>
+        params: opt!(complete!(preceded!(take_until_and_consume!("@param"), to_map))) >>
+        returns: opt!(complete!(preceded!(take_until_and_consume!("@return "), to_map))) >>
+        (Doc {
+            short_description: short_description.to_string(),
+            long_description: long_description.unwrap_or("").to_string(),
+            descriptors: descriptors.unwrap_or(HashMap::new()),
+            params: params.unwrap_or(HashMap::new()),
+            returns: returns.unwrap_or(HashMap::new()),
+        })
+    ));
+
     impl Doc {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
-        pub fn make_doc(vector: &[String], delims: Delimiters) -> Doc {
-            let mut result: Doc = Default::default();
-            for line in vector.iter() {
-                if line == &vector[0] {
-                    result.short_description.push_str(line);
-                } else if line.contains(delims.params) {
-                    let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
-                    let rest: String = splitted[2..].join(" ");
-                    result.params.insert(splitted[1].replace(":", ""), rest);
-                } else if line.contains(delims.ret) {
-                    let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
-                    let rest: String = splitted[2..].join(" ");
-                    result.returns.insert(splitted[1].replace(":", ""), rest);
-                } else if line.contains(delims.opt) {
-                    let splitted: Vec<_> = line.split_whitespace().map(|x| x.to_string()).collect();
-                    let rest: String = splitted[3..].join(" ");
-                    result
-                        .descriptors
-                        .insert(splitted[2].replace(":", ""), rest);
-                } else {
-                    result.long_description.push_str(line);
-                }
-            }
-            result
+        pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
+            let result = x(&vector);
+            result.expect("Parsing error.").1
         }
     }
 
@@ -90,13 +96,11 @@ pub mod docs {
     /// and adds every line to a `Vec` until the end delimiter.
     ///
     /// A final `Vec` of the collected comment strings is returned.
-    fn get_info(p: &Path, delims: Delimiters) -> Vec<Vec<String>> {
-        // let mut p = dirs::home_dir().unwrap();
-        // p.push(".zshrc");
+    fn get_info(p: &Path, delims: Delimiters) -> Vec<String> {
         let f = File::open(&p).expect("file not found.");
         let f = BufReader::new(f);
-        let mut result: Vec<Vec<String>> = Vec::new();
-        result.push(Vec::new());
+        let mut result: Vec<String> = Vec::new();
+        result.push(String::new());
         let mut can_add = false;
         let mut index = 0;
         for line in f.lines() {
@@ -107,27 +111,29 @@ pub mod docs {
             } else if curr_line.contains(delims.end) {
                 can_add = false;
                 index += 1;
-                result.push(Vec::new());
+                result.push(String::new());
             }
             if can_add {
                 if curr_line.contains(delims.opt) {
-                    result[index].push(curr_line);
+                    result[index].push_str(&curr_line);
+                    result[index].push_str("\n");
                 } else {
-                    result[index].push(curr_line.replace(delims.comm, ""));
+                    result[index].push_str(&curr_line);
+                    result[index].push_str("\n");
                 }
             }
         }
         result
     }
 
-    fn generate_doc_file(docs: &[Vec<String>], fname: String, delims: Delimiters) -> DocFile {
+    fn generate_doc_file(docs: &[String], fname: String, delims: Delimiters) -> DocFile {
         let mut all_docs: DocFile = Default::default();
         all_docs.filename = fname;
         for doc in docs.iter() {
-            if doc.to_vec().is_empty() {
+            if doc.is_empty() {
                 continue;
             }
-            let as_bash_doc = Doc::make_doc(&doc.to_vec(), delims);
+            let as_bash_doc = Doc::make_doc(doc.to_string(), delims);
             all_docs.add(as_bash_doc);
         }
         all_docs
