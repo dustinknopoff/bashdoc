@@ -5,13 +5,24 @@ pub mod docs {
     use nom::*;
     use rayon::prelude::*;
     use serde_derive::*;
-    use std::collections::HashMap;
     use std::env;
     use std::fs;
     use std::fs::File;
     use std::io::prelude::*;
     use std::io::BufReader;
     use std::path::Path;
+
+    #[derive(Debug, Default, Serialize, Deserialize, Clone)]
+    struct KV {
+        key: String,
+        value: String,
+    }
+
+    impl PartialEq for KV {
+        fn eq(&self, other: &KV) -> bool {
+            self.key == other.key && self.value == other.value
+        }
+    }
 
     /// Represents a docstring
     /// contains:
@@ -25,9 +36,9 @@ pub mod docs {
     pub struct Doc {
         short_description: String,
         long_description: String,
-        descriptors: HashMap<String, String>,
-        params: HashMap<String, String>,
-        returns: HashMap<String, String>,
+        descriptors: Vec<KV>,
+        params: Vec<KV>,
+        returns: Vec<KV>,
     }
 
     impl PartialEq for Doc {
@@ -40,53 +51,61 @@ pub mod docs {
         }
     }
 
-    fn as_map(input: &str) -> Result<HashMap<String, String>, std::num::ParseIntError> {
-        let mut result = HashMap::new();
-        let parts: Vec<_> = input.split(":").collect();
-        result.insert(parts[0].to_string(), parts[1..].join("").to_string());
+    fn as_map(input: &str) -> Result<KV, std::num::ParseIntError> {
+        let mut result: KV = Default::default();
+        let parts: Vec<_> = input.split(": ").collect();
+        result.key = parts[0].trim().to_string();
+        result.value = parts[1..].join("").to_string();
+        println!("{:#?}", result);
         Ok(result)
     }
 
-    named!(to_map<&str, HashMap<String, String>>,
-    map_res!(take_until_and_consume!("\n"), as_map));
+    named!(to_map<&str, Vec<KV>>,
+    many1!(map_res!(take_until_and_consume!("\n"), as_map)));
 
-    fn parse_doc(input: &str, delims: Delimiters) -> IResult<&str, Doc> {
+    fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
         do_parse!(
-            short_description: preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n")) >>
-                long_description: opt!(preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n"))) >>
-                descriptors: opt!(complete!(preceded!(take_until_and_consume!(delims.opt), to_map))) >>
-                params: opt!(complete!(preceded!(take_until_and_consume!(delims.param), to_map))) >>
-                ret: opt!(complete!(preceded!(take_until_and_consume!(delims.ret), to_map))),
-                (Doc {
+            input,
+            short_description:
+                preceded!(
+                    take_until_and_consume!(delims.comm),
+                    take_until_and_consume!("\n")
+                )
+                >> long_description:
+                    opt!(preceded!(
+                        take_until_and_consume!(delims.comm),
+                        take_until_and_consume!("\n")
+                    ))
+                >> descriptors:
+                    opt!(complete!(preceded!(
+                        take_until_and_consume!(delims.opt),
+                        to_map
+                    )))
+                >> params:
+                    opt!(complete!(preceded!(
+                        take_until_and_consume!(delims.params),
+                        to_map
+                    )))
+                >> ret: opt!(complete!(preceded!(
+                    take_until_and_consume!(delims.ret),
+                    to_map
+                )))
+                >> (Doc {
                     short_description: short_description.to_string(),
                     long_description: long_description.unwrap_or("").to_string(),
-                    descriptors: descriptors.unwrap_or(HashMap::new()),
-                    params: params.unwrap_or(HashMap::new()),
-                    returns: ret.unwrap_or(HashMap::new()),
-                }))
+                    descriptors: descriptors.unwrap_or(Vec::new()),
+                    params: params.unwrap_or(Vec::new()),
+                    returns: ret.unwrap_or(Vec::new()),
+                })
+        )
     }
-
-//    named_args!(x<'a>(input: &'a str, delims: Delimiters)<&'a str, Doc>,
-//    do_parse!(
-//        short_description: preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n")) >>
-//        long_description: opt!(preceded!(take_until_and_consume!(delims.comm), take_until_and_consume!("\n"))) >>
-//        descriptors: opt!(complete!(preceded!(take_until_and_consume!(delims.opt), to_map))) >>
-//        params: opt!(complete!(preceded!(take_until_and_consume!(delims.param), to_map))) >>
-//        returns: opt!(complete!(preceded!(take_until_and_consume!(delims.ret), to_map))) >>
-//        (Doc {
-//            short_description: short_description.to_string(),
-//            long_description: long_description.unwrap_or("").to_string(),
-//            descriptors: descriptors.unwrap_or(HashMap::new()),
-//            params: params.unwrap_or(HashMap::new()),
-//            returns: returns.unwrap_or(HashMap::new()),
-//        })
-//    ));
 
     impl Doc {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
         pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
             let result = parse_doc(&vector, delims);
+            println!("{:#?}", result);
             result.expect("Parsing error.").1
         }
     }
@@ -100,9 +119,8 @@ pub mod docs {
 
     impl DocFile {
         /// Append the given `Doc` to this `AllDoc`
-        pub fn add(&mut self, doc: Doc) -> () {
-            self.thedocs.push(doc);
-            ()
+        pub fn add(&mut self, doc: Doc) {
+            self.thedocs.push(doc)
         }
     }
 
@@ -222,14 +240,14 @@ pub mod docs {
     ///     CTRL-O pushs the boundaries
     /// runner - location, filename: This is the beginning
     /// ```
-    pub fn colorize(thedocs: &DocFile) -> () {
+    pub fn colorize(thedocs: &DocFile) {
         println!(
             "{}: {}",
             "Help".green().underline(),
             thedocs.filename.green().underline()
         );
         for doc in &thedocs.thedocs {
-            let mut params: Vec<_> = doc.params.keys().map(|x| x.to_string()).collect();
+            let mut params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
             let as_string = params.join(", ");
             print!("{}", doc.short_description.replace("()", "").blue().bold());
             if doc.params.is_empty() {
@@ -238,17 +256,17 @@ pub mod docs {
                 println!(" - {}: {}", as_string.cyan(), doc.long_description);
             }
             if !doc.descriptors.is_empty() {
-                for sub in doc.descriptors.keys() {
-                    println!("\t{} {}", sub.yellow().bold(), &doc.descriptors[sub])
-                }
+                doc.descriptors
+                    .iter()
+                    .for_each(|x| println!("\t{} {}", &x.key.yellow().bold(), x.value));
             }
         }
     }
 
-    pub fn printer(thedocs: &DocFile) -> () {
+    pub fn printer(thedocs: &DocFile) {
         println!("Help: {}", thedocs.filename);
         for doc in &thedocs.thedocs {
-            let mut params: Vec<_> = doc.params.keys().map(|x| x.to_string()).collect();
+            let mut params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
             let as_string = params.join(", ");
             print!("{}", doc.short_description.replace("()", ""));
             if doc.params.is_empty() {
@@ -257,9 +275,9 @@ pub mod docs {
                 println!(" - {}: {}", as_string, doc.long_description);
             }
             if !doc.descriptors.is_empty() {
-                for sub in doc.descriptors.keys() {
-                    println!("\t{} {}", sub, &doc.descriptors[sub])
-                }
+                doc.descriptors
+                    .iter()
+                    .for_each(|x| println!("\t{} {}", &x.key, x.value));
             }
         }
     }
