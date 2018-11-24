@@ -28,14 +28,14 @@ pub mod docs {
         }
     }
 
-    impl KV {
-        pub fn new(key: String, value: String) -> Self {
-            KV {
-                key: key,
-                value: value,
-            }
-        }
-    }
+//    impl KV {
+//        pub fn new(key: String, value: String) -> Self {
+//            KV {
+//                key,
+//                value,
+//            }
+//        }
+//    }
 
     /// Represents a docstring
     /// contains:
@@ -76,9 +76,9 @@ pub mod docs {
 
     // named!(to_map<&str, Vec<KV>>,
     // many1!(map_res_err!(take_until_and_consume!("\n"), as_map)));
-    fn to_map(input: &str) -> IResult<&str, Vec<KV>> {
-        println!("{}", input);
-        many1!(input, map_res_err!(take_until_and_consume!("\n"), as_kv))
+//    fn to_map(input: &str) -> IResult<&str, Vec<KV>> {
+//        println!("{}", input);
+//        many1!(input, map_res_err!(take_until_and_consume!("\n"), as_kv))
         // fold_many1!(
         //     input,
         //     take_until_and_consume!("\n"),
@@ -89,7 +89,7 @@ pub mod docs {
         //         acc
         //     }
         // )
-    }
+//    }
 
     fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
          println!("{}", input);
@@ -104,31 +104,39 @@ pub mod docs {
                     take_until_and_consume!(delims.comm),
                     take_until_and_consume!("\n")
                 ))
-                >> desc:  opt!(
+                >> desc:
+                opt!(
                 complete!(
-                many1!(
-                preceded!(
-                take_until_and_consume!(delims.opt),
-                map_res!(take_until_and_consume!("\n"),
-                 as_kv
-                 )))))
+                fold_many0!(
+                take_until_and_consume!("\n"),
+                Vec::new(),
+                |mut acc: Vec<_>, item| {
+                    acc.push(as_kv(item).unwrap());
+                    println!("{:#?}", acc);
+                    acc
+                })))
                 >> par:
                 opt!(
                 complete!(
-                many1!(
-                preceded!(
-                take_until_and_consume!(delims.params),
-                map_res!(take_until_and_consume!("\n"),
-                 as_kv
-                 )))))
-                >> ret: opt!(
+                fold_many0!(
+                take_until_and_consume!("\n"),
+                Vec::new(),
+                |mut acc: Vec<_>, item| {
+                    acc.push(as_kv(item).unwrap());
+                    println!("{:#?}", acc);
+                    acc
+                })))
+                >> ret:
+                opt!(
                 complete!(
-                many1!(
-                preceded!(
-                take_until_and_consume!(delims.ret),
-                map_res!(take_until_and_consume!("\n"),
-                 as_kv
-                 )))))
+                fold_many0!(
+                take_until_and_consume!("\n"),
+                Vec::new(),
+                |mut acc: Vec<_>, item| {
+                    acc.push(as_kv(item).unwrap());
+                    println!("{:#?}", acc);
+                    acc
+                })))
                 >> (Doc {
                     short_description: short.to_string(),
                     long_description: long.unwrap_or("").to_string(),
