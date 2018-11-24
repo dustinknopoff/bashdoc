@@ -9,9 +9,13 @@ pub mod docs {
     use std::fs;
     use std::fs::File;
     use std::io::prelude::*;
-    use std::io::BufReader;
     use std::path::Path;
 
+    /// Represents a simple Key, Value pair
+    /// contains:
+    ///
+    /// - `key`
+    /// - `value`
     #[derive(Debug, Default, Serialize, Deserialize, Clone)]
     struct KV {
         key: String,
@@ -24,14 +28,23 @@ pub mod docs {
         }
     }
 
+    impl KV {
+        pub fn new(key: String, value: String) -> Self {
+            KV {
+                key: key,
+                value: value,
+            }
+        }
+    }
+
     /// Represents a docstring
     /// contains:
     ///
     /// - short description (name of function)
     /// - long description
-    /// - `HashMap` of options to their descriptions
-    /// - `HashMap` of parameters to their descriptions
-    /// - `HashMap` of return values to their descriptions
+    /// - `Vec<KV>` of options to their descriptions
+    /// - `Vec<KV>` of parameters to their descriptions
+    /// - `Vec<KV>` of return values to their descriptions
     #[derive(Debug, Default, Serialize, Deserialize, Clone)]
     pub struct Doc {
         short_description: String,
@@ -51,51 +64,95 @@ pub mod docs {
         }
     }
 
-    fn as_map(input: &str) -> Result<KV, std::num::ParseIntError> {
-        let mut result: KV = Default::default();
+    fn as_kv(input: &str) -> Result<KV, u32> {
         let parts: Vec<_> = input.split(": ").collect();
-        result.key = parts[0].trim().to_string();
-        result.value = parts[1..].join("").to_string();
-        println!("{:#?}", result);
+        let result = KV {
+            key: parts[0].trim().to_string(),
+            value: parts[1..].join("").to_string(),
+        };
+         println!("{:#?}", result);
         Ok(result)
     }
 
-    named!(to_map<&str, Vec<KV>>,
-    many1!(map_res!(take_until_and_consume!("\n"), as_map)));
+    // named!(to_map<&str, Vec<KV>>,
+    // many1!(map_res_err!(take_until_and_consume!("\n"), as_map)));
+    fn to_map(input: &str) -> IResult<&str, Vec<KV>> {
+        println!("{}", input);
+        many1!(input, map_res_err!(take_until_and_consume!("\n"), as_kv))
+        // fold_many1!(
+        //     input,
+        //     take_until_and_consume!("\n"),
+        //     Vec::new(),
+        //     |mut acc: Vec<_>, item| {
+        //         acc.push(as_map(item).unwrap());
+        //         println!("{:#?}", acc);
+        //         acc
+        //     }
+        // )
+    }
 
     fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
+         println!("{}", input);
         do_parse!(
             input,
-            short_description:
+            short:
                 preceded!(
                     take_until_and_consume!(delims.comm),
                     take_until_and_consume!("\n")
                 )
-                >> long_description:
-                    opt!(preceded!(
-                        take_until_and_consume!(delims.comm),
-                        take_until_and_consume!("\n")
-                    ))
-                >> descriptors:
-                    opt!(complete!(preceded!(
-                        take_until_and_consume!(delims.opt),
-                        to_map
-                    )))
-                >> params:
-                    opt!(complete!(preceded!(
-                        take_until_and_consume!(delims.params),
-                        to_map
-                    )))
-                >> ret: opt!(complete!(preceded!(
-                    take_until_and_consume!(delims.ret),
-                    to_map
-                )))
+                >> long: opt!(preceded!(
+                    take_until_and_consume!(delims.comm),
+                    take_until_and_consume!("\n")
+                ))
+                >> desc:  opt!(
+                complete!(
+                many1!(
+                preceded!(
+                take_until_and_consume!(delims.opt),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
+                >> par:
+                opt!(
+                complete!(
+                many1!(
+                preceded!(
+                take_until_and_consume!(delims.params),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
+                >> ret: opt!(
+                complete!(
+                many1!(
+                preceded!(
+                take_until_and_consume!(delims.ret),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
                 >> (Doc {
-                    short_description: short_description.to_string(),
-                    long_description: long_description.unwrap_or("").to_string(),
-                    descriptors: descriptors.unwrap_or(Vec::new()),
-                    params: params.unwrap_or(Vec::new()),
-                    returns: ret.unwrap_or(Vec::new()),
+                    short_description: short.to_string(),
+                    long_description: long.unwrap_or("").to_string(),
+                    descriptors: match desc {
+                        Some(i) => {
+                            println!("{:#?}", i);
+                            i
+                        }
+                        None => Vec::new(),
+                    },
+                    params: match par {
+                        Some(i) => {
+                            println!("{:#?}", i);
+                            i
+                        }
+                        None => Vec::new(),
+                    },
+                    returns: match ret {
+                        Some(i) => {
+                            println!("{:#?}", i);
+                            i
+                        }
+                        None => Vec::new(),
+                    },
                 })
         )
     }
@@ -104,6 +161,7 @@ pub mod docs {
         /// # Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
         pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
+            // println!("{:#?}", vector);
             let result = parse_doc(&vector, delims);
             println!("{:#?}", result);
             result.expect("Parsing error.").1
@@ -124,43 +182,64 @@ pub mod docs {
         }
     }
 
+    fn getinfo<'a>(
+        input: &'static str,
+        delims: Delimiters,
+    ) -> IResult<&'static str, Vec<&'static str>> {
+        // let used = input.as_str();
+        many0!(
+            input,
+            complete!(preceded!(
+                take_until_and_consume!(delims.start),
+                take_until_and_consume!(delims.end)
+            ))
+        )
+    }
+
     /// Gets all `START_DELIM->END_DELIM` comments in the zshrc
     ///
     /// This goes through every line finding the start of the docstring
     /// and adds every line to a `Vec` until the end delimiter.
     ///
     /// A final `Vec` of the collected comment strings is returned.
-    fn get_info(p: &Path, delims: Delimiters) -> Vec<String> {
-        let f = File::open(&p).expect("file not found.");
-        let f = BufReader::new(f);
-        let mut result: Vec<String> = Vec::new();
-        result.push(String::new());
-        let mut can_add = false;
-        let mut index = 0;
-        for line in f.lines() {
-            let curr_line = line.expect("Line cannot be accessed.");
-            if curr_line.contains(delims.start) {
-                can_add = true;
-                continue;
-            } else if curr_line.contains(delims.end) {
-                can_add = false;
-                index += 1;
-                result.push(String::new());
-            }
-            if can_add {
-                if curr_line.contains(delims.opt) {
-                    result[index].push_str(&curr_line);
-                    result[index].push_str("\n");
-                } else {
-                    result[index].push_str(&curr_line);
-                    result[index].push_str("\n");
-                }
-            }
-        }
-        result
+    fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<&'a str> {
+        let mut f = File::open(&p).expect("file not found.");
+        let mut buffer = String::new();
+        f.read_to_string(&mut buffer).unwrap();
+        let used = Box::leak(buffer.into_boxed_str());
+        // println!("{:#?}", used);
+        let result = getinfo(used, delims);
+        // println!("{:#?}", result);
+        result.unwrap().1
+        // let f = BufReader::new(f);
+        // let mut result: Vec<String> = Vec::new();
+        // result.push(String::new());
+        // let mut can_add = false;
+        // let mut index = 0;
+        // for line in f.lines() {
+        //     let curr_line = line.expect("Line cannot be accessed.");
+        //     if curr_line.contains(delims.start) {
+        //         can_add = true;
+        //         continue;
+        //     } else if curr_line.contains(delims.end) {
+        //         can_add = false;
+        //         index += 1;
+        //         result.push(String::new());
+        //     }
+        //     if can_add {
+        //         if curr_line.contains(delims.opt) {
+        //             result[index].push_str(&curr_line);
+        //             result[index].push_str("\n");
+        //         } else {
+        //             result[index].push_str(&curr_line);
+        //             result[index].push_str("\n");
+        //         }
+        //     }
+        // }
+        // result
     }
 
-    fn generate_doc_file(docs: &[String], fname: String, delims: Delimiters) -> DocFile {
+    fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFile {
         let mut all_docs: DocFile = Default::default();
         all_docs.filename = fname;
         for doc in docs.iter() {
@@ -363,12 +442,12 @@ pub mod docs {
     mod tests {
         use super::*;
 
-        macro_rules! map(
+        macro_rules! map (
         { $($key:expr => $value:expr),+ } => {
                 {
-                    let mut m = ::std::collections::HashMap::new();
+                    let mut m = Vec::new();
                     $(
-                        m.insert($key, $value);
+                        m.push(KV::new($key, $value));
                     )+
                     m
                 }
@@ -377,18 +456,12 @@ pub mod docs {
 
         #[test]
         fn make_doc() {
-            let input: &[String] = &vec![
-                "runner()".to_string(),
-                "This is the beginning".to_string(),
-                "@params filename: don\'t test me".to_string(),
-                "@params location: where to put it".to_string(),
-                "@returns nothing:".to_string(),
-            ];
-            let result = Doc::make_doc(&input, Delimiters::get_delims());
+            let input: String = String::from("# runner()\n# This is the beginning\n# @params filename: don\'t test me\n# @params location: where to put it\n# @returns nothing:\n");
+            let result = Doc::make_doc(input, Delimiters::get_delims());
             let mut expected = Doc::default();
             expected.short_description = "runner()".to_string();
             expected.long_description = "This is the beginning".to_string();
-            expected.descriptors = HashMap::new();
+            expected.descriptors = Vec::new();
             expected.params = map!(
                 "location".to_string() => "where to put it".to_string(),
                 "filename".to_string() => "don\'t test me".to_string()
@@ -403,7 +476,7 @@ pub mod docs {
             let mut expected = Doc::default();
             expected.short_description = "runner()".to_string();
             expected.long_description = "This is the beginning".to_string();
-            expected.descriptors = HashMap::new();
+            expected.descriptors = Vec::new();
             expected.params = map!(
                 "location".to_string() => "where to put it".to_string(),
                 "filename".to_string() => "don\'t test me".to_string()
@@ -413,7 +486,7 @@ pub mod docs {
             let mut result = Doc::default();
             result.short_description = "runner()".to_string();
             result.long_description = "This is the beginning".to_string();
-            result.descriptors = HashMap::new();
+            result.descriptors = Vec::new();
             result.params = map!(
                 "location".to_string() => "where to put it".to_string(),
                 "filename".to_string() => "don\'t test me".to_string()
@@ -429,22 +502,10 @@ pub mod docs {
         fn test_get_info() {
             let p = Path::new("example.sh");
             let result = get_info(&p, Delimiters::get_delims());
-            let expected: Vec<Vec<String>> = vec![
-                [
-                    "runner()".to_string(),
-                    "This is the beginning".to_string(),
-                    "# - CTRL-O pushs the boundaries".to_string(),
-                ]
-                    .to_vec(),
-                [
-                    "runner()".to_string(),
-                    "This is the beginning".to_string(),
-                    "@params filename: don\'t test me".to_string(),
-                    "@params location: where to put it".to_string(),
-                    "@returns nothing:".to_string(),
-                ]
-                    .to_vec(),
-                [].to_vec(),
+            let expected: Vec<String> = vec![
+                "runner()\nThis is the beginning\n# - CTRL-O pushs the boundaries".to_string(),
+                "runner()\nThis is the beginning\n@params filename: don\'t test me\n@params location: where to put it\n@returns nothing:".to_string(),
+                String::new()
             ];
             assert_eq!(expected, result);
         }
