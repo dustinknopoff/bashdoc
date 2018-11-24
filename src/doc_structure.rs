@@ -107,36 +107,29 @@ pub mod docs {
                 >> desc:
                 opt!(
                 complete!(
-                fold_many0!(
-                take_until_and_consume!("\n"),
-                Vec::new(),
-                |mut acc: Vec<_>, item| {
-                    acc.push(as_kv(item).unwrap());
-                    println!("{:#?}", acc);
-                    acc
-                })))
+                many0!(
+                preceded!(
+                take_until_and_consume!(delims.opt),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
                 >> par:
                 opt!(
                 complete!(
-                fold_many0!(
-                take_until_and_consume!("\n"),
-                Vec::new(),
-                |mut acc: Vec<_>, item| {
-                    acc.push(as_kv(item).unwrap());
-                    println!("{:#?}", acc);
-                    acc
-                })))
-                >> ret:
-                opt!(
+                many0!(
+                preceded!(
+                take_until_and_consume!(delims.params),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
+                >> ret: opt!(
                 complete!(
-                fold_many0!(
-                take_until_and_consume!("\n"),
-                Vec::new(),
-                |mut acc: Vec<_>, item| {
-                    acc.push(as_kv(item).unwrap());
-                    println!("{:#?}", acc);
-                    acc
-                })))
+                many0!(
+                preceded!(
+                take_until_and_consume!(delims.ret),
+                map_res!(take_until_and_consume!("\n"),
+                 as_kv
+                 )))))
                 >> (Doc {
                     short_description: short.to_string(),
                     long_description: long.unwrap_or("").to_string(),
