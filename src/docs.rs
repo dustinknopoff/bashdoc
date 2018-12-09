@@ -11,10 +11,6 @@ use std::io::prelude::*;
 use std::path::Path;
 
 /// Represents a simple Key, Value pair
-/// contains:
-///
-/// - `key`
-/// - `value`
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 struct KV {
     key: String,
@@ -35,13 +31,6 @@ impl KV {
 }
 
 /// Represents a docstring
-/// contains:
-///
-/// - short description (name of function)
-/// - long description
-/// - `Vec<KV>` of options to their descriptions
-/// - `Vec<KV>` of parameters to their descriptions
-/// - `Vec<KV>` of return values to their descriptions
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 pub struct Doc {
     short_description: String,
@@ -61,6 +50,14 @@ impl PartialEq for Doc {
     }
 }
 
+/// Nom function to convert a given string into a `KV`
+///
+/// # Example
+///
+/// ```
+/// let example = "# @param filename: don't test me";
+/// as_kv(example) // returns [KV {key: "filename", value: "don't test me"}]
+/// ```
 fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
     let parts: Vec<_> = input.split(": ").collect();
     let result = KV {
@@ -71,6 +68,7 @@ fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
     Ok(result)
 }
 
+/// Nom function to convert a given string in to a `Doc`
 fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
     do_parse!(
         input,
@@ -139,6 +137,7 @@ impl DocFile {
     }
 }
 
+/// Nom function to extract all docstring from a file.
 fn getinfo(input: &'static str, delims: Delimiters) -> IResult<&'static str, Vec<&'static str>> {
     many0!(
         input,
@@ -166,6 +165,7 @@ fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<&'a str> {
     result.unwrap().1
 }
 
+/// Given a `Vec<str>` make a `DocFile`
 fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFile {
     let mut all_docs: DocFile = Default::default();
     all_docs.filename = fname;
@@ -179,6 +179,7 @@ fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFil
     all_docs
 }
 
+/// Given a file path and delimiters, generate a DocFile for all files requested.
 pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
     let dir = p.replace("~", home_dir().unwrap().to_str().unwrap());
     if is_directory {
@@ -270,6 +271,7 @@ pub fn colorize(thedocs: &DocFile) {
     }
 }
 
+/// Color free version of `colorize`
 pub fn printer(thedocs: &DocFile) {
     println!("Help: {}", thedocs.filename);
     for doc in &thedocs.thedocs {
@@ -289,6 +291,7 @@ pub fn printer(thedocs: &DocFile) {
     }
 }
 
+/// Given a list of `DocFile` and a file path, write the JSON representation to a file.
 pub fn to_json(docstrings: &[DocFile], file_name: &str) {
     let json = serde_json::to_string_pretty(&docstrings).expect("Could not convert to JSON");
     let path_as_str = file_name.replace("~", home_dir().unwrap().to_str().unwrap());
@@ -298,6 +301,7 @@ pub fn to_json(docstrings: &[DocFile], file_name: &str) {
         .expect("Could not write to file.");
 }
 
+/// Represents the necessary delimiters for a `bashdoc`
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub struct Delimiters<'a> {
     start: &'a str,
@@ -322,6 +326,7 @@ impl<'a> Default for Delimiters<'a> {
 }
 
 impl<'a> Delimiters<'a> {
+    /// Override default delimiters with passed in values
     pub fn override_delims(overrides: String) -> Self {
         let mut result: Delimiters = Delimiters::default();
         let splitted: Vec<_> = Box::leak(overrides.into_boxed_str())
@@ -339,6 +344,7 @@ impl<'a> Delimiters<'a> {
         result
     }
 
+    /// Read/Write contents of `$BASHDOC_CONFIG_PATH` for use as Delimiters.
     pub fn get_delims() -> Self {
         let mut contents = String::new();
         match env::var_os("BASHDOC_CONFIG_PATH") {
