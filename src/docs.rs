@@ -64,7 +64,6 @@ fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
         key: parts[0].trim().to_string(),
         value: parts[1..].join("").to_string(),
     };
-    println!("{:#?}", result);
     Ok(result)
 }
 
@@ -118,7 +117,6 @@ impl Doc {
     pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
         // println!("{:#?}", vector);
         let result = parse_doc(&vector, delims);
-        println!("{:#?}", result);
         result.expect("Parsing error.").1
     }
 }
