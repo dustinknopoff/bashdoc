@@ -43,19 +43,9 @@
 //!
 //! These can be modifed in the code to your preference.
 //!
-extern crate clap;
-extern crate colored;
-extern crate dirs;
-extern crate glob;
-extern crate nom;
-extern crate rayon;
-extern crate serde;
-extern crate serde_derive;
-extern crate serde_json;
-extern crate toml;
-mod doc_structure;
+mod docs;
+use crate::docs::*;
 use clap::{load_yaml, App};
-use doc_structure::docs::*;
 
 fn main() {
     let yaml = load_yaml!("../cli.yml");
