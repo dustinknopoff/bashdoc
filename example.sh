@@ -1,7 +1,9 @@
 #; 
 # runner()
 # This is the beginning
-# - CTRL-O pushs the boundaries
+# @param filename: don't test me
+# @param location: where to put it
+# @return nothing:
 #"
 runner() {
     ls
@@ -10,9 +12,9 @@ runner() {
 #; 
 # runner()
 # This is the beginning
-# @params filename: don't test me
-# @params location: where to put it
-# @returns nothing:
+# @param filename: don't test me
+# @param location: where to put it
+# @return nothing:
 #"
 runner() {
     ls
