@@ -130,6 +130,7 @@ pub struct DocFile {
 
 impl DocFile {
     /// Append the given `Doc` to this `AllDoc`
+    #[allow(dead_code)]
     pub fn add(&mut self, doc: Doc) {
         self.thedocs.push(doc)
     }
@@ -167,13 +168,12 @@ fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<&'a str> {
 fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFile {
     let mut all_docs: DocFile = Default::default();
     all_docs.filename = fname;
-    for doc in docs.iter() {
-        if doc.is_empty() {
-            continue;
-        }
-        let as_bash_doc = Doc::make_doc(doc.to_string(), delims);
-        all_docs.add(as_bash_doc);
-    }
+    let collected: Vec<Doc> = docs
+        .par_iter()
+        .filter(|x| !x.is_empty())
+        .map(|x| Doc::make_doc(x.to_string(), delims))
+        .collect();
+    all_docs.thedocs = collected;
     all_docs
 }
 
