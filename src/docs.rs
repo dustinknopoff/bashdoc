@@ -179,7 +179,11 @@ fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFil
 
 /// Given a file path and delimiters, generate a DocFile for all files requested.
 pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
-    let dir = p.replace("~", home_dir().unwrap().to_str().unwrap());
+    let dir = if cfg!(windows) {
+        String::from(p)
+    } else {
+        p.replace("~", home_dir().unwrap().to_str().unwrap())
+    };
     if is_directory {
         let files: Vec<_> = glob(&dir).unwrap().filter_map(|x| x.ok()).collect();
         let every_doc: Vec<DocFile> = files
@@ -292,7 +296,11 @@ pub fn printer(thedocs: &DocFile) {
 /// Given a list of `DocFile` and a file path, write the JSON representation to a file.
 pub fn to_json(docstrings: &[DocFile], file_name: &str) {
     let json = serde_json::to_string_pretty(&docstrings).expect("Could not convert to JSON");
-    let path_as_str = file_name.replace("~", home_dir().unwrap().to_str().unwrap());
+    let path_as_str = if cfg!(windows) {
+        String::from(file_name)
+    } else {
+        file_name.replace("~", home_dir().unwrap().to_str().unwrap())
+    };
     let path = Path::new(&path_as_str);
     let mut file = File::create(Path::new(&path)).expect("Invalid file path.");
     file.write_all(&json.as_bytes())
