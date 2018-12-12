@@ -42,7 +42,7 @@ These can be modifed in your `.bashdocrc`.
 
 ## Install
 
-**NOTE: Must be on Rust v1.30 or newer.**
+**NOTE: Must use Rust 2018 Edition**
 
 _update with `rustup update stable`_
 
@@ -65,13 +65,14 @@ USAGE:
 FLAGS:
     -c, --color        toggles color
     -d, --directory    pass a glob pattern to run on.
-    -h, --help         Prints help information
+        --help         Prints help information
     -V, --version      Prints version information
 
 OPTIONS:
-    -j, --json <FILE>    print result as JSON
+    -h, --html <html>            output html documentation
+    -j, --json <FILE>            print result as JSON
+    -o, --override <override>    override delimiters for this call.
 
 ARGS:
     <INPUT>    Sets the input file to use
-
 ```
