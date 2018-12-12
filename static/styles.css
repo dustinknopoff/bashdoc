@@ -67,11 +67,12 @@ ul {
 }
 
 .card {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.2);
   transition: 0.3s;
   width: 40%;
   /* height: 10vh; */
   padding: 30px;
+  margin-bottom: 20px;
   overflow-y: scroll;
   /* display: flex; */
   /* align-items: center; */
@@ -81,6 +82,7 @@ ul {
 .active {
   width: 35%;
   background-color: #efefef;
+  margin-bottom: 0;
   /* height: 25vh; */
 }
 
