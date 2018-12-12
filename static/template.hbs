@@ -8,6 +8,10 @@
   margin-bottom: 5vh;
 }
 
+h1 > a {
+    color: black;
+}
+
 header {
   position: fixed;
   top: 0;
@@ -27,6 +31,10 @@ ul {
   flex-direction: column;
   height: 80vh;
   justify-content: space-around;
+}
+
+html,body {
+    font-family: "SF Pro Display, sans-serif";
 }
 
 .content {
@@ -91,7 +99,7 @@ ul {
 .card-title,
 .description {
   padding: 10px;
-  font-family: "iA Writer Duospace";
+  font-family: "iA Writer Duospace, monospace";
 }
 
 .card > * {
@@ -112,12 +120,17 @@ ul {
   color: blue;
 }
 
+.returns,
+.key {
+  color: yellow;
+}
     </style>
 </head>
 
 <body>
     <header>
-        <h1>Bashdoc</h1>
+        <h1><a href="">Bashdoc</a>
+        </h1>
         <h4>35 functions</h4>
     </header>
     <div class="container">

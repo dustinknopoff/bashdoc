@@ -11,6 +11,11 @@ header {
   padding-left: 20px;
 }
 
+html,
+body {
+  font-family: "SF Pro Display, sans-serif";
+}
+
 .sidebar {
   width: 33vw;
   position: fixed;
@@ -86,7 +91,7 @@ ul {
 .card-title,
 .description {
   padding: 10px;
-  font-family: "iA Writer Duospace";
+  font-family: "iA Writer Duospace, monospace";
 }
 
 .card > * {
@@ -98,6 +103,10 @@ ul {
   flex-wrap: wrap;
 }
 
+h1 > a {
+  color: black;
+}
+
 .descriptors > div {
   width: 33%;
   padding-top: 5px;
@@ -105,4 +114,9 @@ ul {
 
 .key {
   color: blue;
+}
+
+.returns,
+.key {
+  color: yellow;
 }
