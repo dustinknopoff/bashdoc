@@ -1,9 +1,11 @@
 use colored::*;
 use dirs::home_dir;
 use glob::glob;
+use handlebars::{to_json, Handlebars};
 use nom::*;
 use rayon::prelude::*;
 use serde_derive::*;
+use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::fs::File;
@@ -67,6 +69,15 @@ fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
     Ok(result)
 }
 
+fn as_kv_whitespace(input: &str) -> Result<KV, nom::ErrorKind> {
+    let parts: Vec<_> = input.split_whitespace().collect();
+    let result = KV {
+        key: parts[0].trim().to_string(),
+        value: parts[1..].join(" ").to_string(),
+    };
+    Ok(result)
+}
+
 /// Nom function to convert a given string in to a `Doc`
 fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
     do_parse!(
@@ -85,7 +96,7 @@ fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
                     take_until_and_consume!(delims.opt),
                     take_until_and_consume!("\n")
                 ),
-                as_kv
+                as_kv_whitespace
             ))))
             >> par: opt!(many0!(complete!(map_res!(
                 preceded!(
@@ -294,8 +305,10 @@ pub fn printer(thedocs: &DocFile) {
 }
 
 /// Given a list of `DocFile` and a file path, write the JSON representation to a file.
-pub fn to_json(docstrings: &[DocFile], file_name: &str) {
-    let json = serde_json::to_string_pretty(&docstrings).expect("Could not convert to JSON");
+pub fn write_json(docstrings: &[DocFile], file_name: &str) {
+    let mut map = HashMap::new();
+    map.insert("docs", docstrings);
+    let json = serde_json::to_string_pretty(&map).expect("Could not convert to JSON");
     let path_as_str = if cfg!(windows) {
         String::from(file_name)
     } else {
@@ -305,6 +318,18 @@ pub fn to_json(docstrings: &[DocFile], file_name: &str) {
     let mut file = File::create(Path::new(&path)).expect("Invalid file path.");
     file.write_all(&json.as_bytes())
         .expect("Could not write to file.");
+}
+
+pub fn to_html(docstrings: &[DocFile], dir: &str) {
+    for dfile in docstrings {
+        let json = to_json(dfile);
+        let handlebars = Handlebars::new();
+        let mut template = File::open("./static/template.hbs").unwrap();
+        let mut output = File::create(format!("{}/{}.html", dir, dfile.filename).as_str()).unwrap();
+        handlebars
+            .render_template_source_to_write(&mut template, &json, &mut output)
+            .unwrap();
+    }
 }
 
 /// Represents the necessary delimiters for a `bashdoc`

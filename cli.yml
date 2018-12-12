@@ -23,6 +23,11 @@ args:
       short: o
       long: override
       takes_value: true
+  - html:
+      help: output html documentation
+      short: h
+      long: html
+      takes_value: true
 author: "Dustin Knopoff <dustinknopoff@gmail.com>"
 name: bashdoc
 version: "1.0"

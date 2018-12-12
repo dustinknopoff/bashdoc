@@ -69,7 +69,9 @@ fn main() {
         )
     };
     if matches.is_present("json") {
-        to_json(&all_em, matches.value_of("json").unwrap());
+        write_json(&all_em, matches.value_of("json").unwrap());
+    } else if matches.is_present("html") {
+        to_html(&all_em, matches.value_of("html").unwrap());
     } else {
         for doc in &all_em {
             if matches.is_present("color") {
