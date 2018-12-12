@@ -1,23 +1,18 @@
 .container {
   margin-top: 20vh;
+  margin-bottom: 5vh;
 }
 
 header {
   position: fixed;
   top: 0;
-  height: 30vh;
+  height: 20vh;
   width: 100%;
   padding-left: 20px;
 }
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-}
-
 .sidebar {
-  width: 33%;
+  width: 33vw;
   position: fixed;
 }
 
@@ -30,8 +25,9 @@ ul {
 }
 
 .content {
-  margin-left: 33%;
-  width: 66%;
+  margin-left: 20vw;
+  width: 66vw;
+  margin-bottom: 5vh;
 }
 
 ul {
@@ -67,16 +63,23 @@ ul {
 .card {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   transition: 0.3s;
-  width: 100%;
-  height: 20vh;
-  padding-top: 30px;
+  width: 40%;
+  /* height: 10vh; */
+  padding: 30px;
   overflow-y: scroll;
+  /* display: flex; */
+  /* align-items: center; */
 }
 
-.card:hover {
-  width: 95%;
+.card:hover,
+.active {
+  width: 35%;
   background-color: #efefef;
   /* height: 25vh; */
+}
+
+.card-title {
+  color: #c95252;
 }
 
 .card-title,
