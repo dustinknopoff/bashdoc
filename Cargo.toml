@@ -1,7 +1,6 @@
 [package]
 name = "bashdoc"
 version = "0.2.0"
-authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
 edition = "2018"
 
 [dependencies]
