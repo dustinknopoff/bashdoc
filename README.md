@@ -20,7 +20,7 @@ cd() {
 
 Outputs
 
-![](./demo.png)
+![](./example/zshrc.png)
 
 with lots of color!
 
