@@ -1,0 +1,104 @@
+.container {
+  margin-top: 20vh;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  height: 30vh;
+  width: 100%;
+  padding-left: 20px;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+.sidebar {
+  width: 33%;
+  position: fixed;
+}
+
+.sidebar,
+ul {
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  justify-content: space-around;
+}
+
+.content {
+  margin-left: 33%;
+  width: 66%;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: gray;
+}
+
+a:hover {
+  color: darkgray;
+}
+
+.content,
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 40px;
+}
+
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+  width: 100%;
+  height: 20vh;
+  padding-top: 30px;
+  overflow-y: scroll;
+}
+
+.card:hover {
+  width: 95%;
+  background-color: #efefef;
+  /* height: 25vh; */
+}
+
+.card-title,
+.description {
+  padding: 10px;
+  font-family: "iA Writer Duospace";
+}
+
+.card > * {
+  padding-left: 10px;
+}
+
+.descriptors {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.descriptors > div {
+  width: 33%;
+  padding-top: 5px;
+}
+
+.key {
+  color: blue;
+}

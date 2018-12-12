@@ -1,0 +1,64 @@
+<html>
+
+<head>
+    <title>{{filename}}</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="normalize.css">
+</head>
+
+<body>
+    <header>
+        <h1>Bashdoc</h1>
+        <h4>35 functions</h4>
+    </header>
+    <div class="container">
+        <div class="sidebar">
+            {{!-- <form><input type="search" /></form> --}}
+            <ul>
+                {{#each thedocs}}
+                <li>
+                    <a href="#{{short_description}}">{{ this.short_description }}</a>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        <div class="content">
+            <ul>
+                {{#each thedocs}}
+                <li class="card" name="{{short_description}}" id="{{short_description}}">
+                    <div class="card-title">{{ short_description }}</div>
+                    <div class="description">{{ long_description }}</div>
+                    {{#if params}}
+                    <div class="parameters">
+                        {{#each params}}
+                        <div>
+                            <span class="key">{{ key }}</span>: <span>{{ value }}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{/if}} {{#if descriptors}}
+                    <div class="descriptors">
+                        {{#each descriptors}}
+                        <div>
+                            <span class="key">{{ key }}</span>: <span>{{ value }}</span>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{/if}} {{#if returns}}
+                    <ul class="returns">
+                        {{#each returns}}
+                        <li>
+                            <span class="key">{{ key }}</span>: <span>{{ value }}</span>
+                        </li>
+                        {{/each}}
+                    </ul>
+                    {{/if}}
+                </li>
+                {{/each}}
+            </ul>
+
+        </div>
+    </div>
+</body>
+
+</html>
