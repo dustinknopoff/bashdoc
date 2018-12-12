@@ -325,7 +325,13 @@ pub fn to_html(docstrings: &[DocFile], dir: &str) {
         let json = to_json(dfile);
         let handlebars = Handlebars::new();
         let mut template = File::open("./static/template.hbs").unwrap();
-        let mut output = File::create(format!("{}/{}.html", dir, dfile.filename).as_str()).unwrap();
+        let mut output = if dir.len() == 1 {
+            File::create(format!("{}.html", dfile.filename).as_str())
+                .expect("File cannot be created")
+        } else {
+            File::create(format!("{}/{}.html", dir, dfile.filename).as_str())
+                .expect("File cannot be created")
+        };
         handlebars
             .render_template_source_to_write(&mut template, &json, &mut output)
             .unwrap();

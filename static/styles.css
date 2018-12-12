@@ -39,6 +39,7 @@ ul {
 li {
   margin: 0;
   padding: 0;
+  padding-right: 3px;
   width: 100%;
 }
 

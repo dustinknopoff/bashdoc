@@ -1,0 +1,476 @@
+# EXPORTS
+# If you come from bash you might have to change your $PATH.
+export PATH=$HOME/bin:/usr/local/bin:$PATH
+# Path to your oh-my-zsh installation.
+export ZSH=$HOME/.oh-my-zsh
+export RIPGREP_CONFIG_PATH="${HOME}/.ripgreprc"
+export BASHDOC_CONFIG_PATH="${HOME}/.bashdocrc"
+export PATH="$PATH:$HOME/.scripts"
+export RUST_BACKTRACE=1
+# source /home/Dustin/.bash_profile
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='code'
+fi
+
+export PATH="/user/local/bin:$PATH"
+
+# ALIASES
+## re-initialize .zshrc file
+#;
+# sourcez
+# re-initialize .zshrc file
+#"
+alias sourcez="source ~/.zshrc" 
+## open .zshrc in VSCode
+#;
+# zshconfig
+# open .zshrc in VSCode
+#"
+alias zshconfig="code ~/.zshrc"
+## open .vimrc in vim
+#;
+# vimconfig
+# open .vimrc in vim
+#"
+alias vimconfig="vim ~/.vimrc"
+
+alias serve='python3.6 -m http.server' #start a little server
+eval $(thefuck --alias) #make The Fuck work
+## shortcut to ~/Documents folder
+#;
+# docs
+# shortcut to ~/Documents folder
+#"
+alias docs='cd ~/Documents' #shortcut to go to Documents folder
+## activate virtual python environment
+#;
+# svenv
+# activate virtual python environment
+#"
+alias svenv='source venv/bin/activate' #shortcut to activate venv
+# alias ls="command ls ${colorflag}"
+# alias grep='grep --color=auto'
+# alias fgrep='fgrep --color=auto'
+# alias egrep='egrep --color=auto'
+## update Operating System, Brew, NPM, Applications, and Pip
+#;
+# update
+# update Operating System, Brew, NPM, Applications, and Pip
+#"
+alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g; mas upgrade; brew cask upgrade;' #update everything
+## remove .DS_Store files from current directory
+#;
+# cleanup
+# remove .DS_Store files from current directory
+#"
+alias cleanup="find . -type f -name '*.DS_Store' -ls -delete" #get rid of .DS_Store
+## clean the trash
+#;
+# emptytrash
+# clean the trash
+#"
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'" #update everything
+# alias ccat='pygmentize -g'
+## access cht.sh for help with commands and languages
+#;
+# helpme
+# access cht.sh for help with commands and languages
+#"
+alias helpme='cht.sh' #get help with commands and languages
+## shortcut to iCloud documents
+#;
+# cloud
+# shortcut to iCloud documents
+#"
+alias cloud='cd ~/Library/Mobile\ Documents/com\~apple\~CloudDocs' #shortcut to iCloud
+## shortcut to exported Notes
+#;
+# notes
+# shortcut to exported Notes
+#"
+alias notes='cd ~/Library/Mobile\ Documents/com\~apple\~CloudDocs/Notes' #shortcut to Bear Notes in iCloud
+## Shortcut to ~/Documents/Gits
+#;
+# gits
+# Shortcut to ~/Documents/Gits
+#"
+alias gits='cd ~/Documents/Gits' #shortcut to folder containing git controlled directories
+
+function myhelp() {
+    if [ -z "$1" ];
+    then
+    bashdoc ~/.zshrc -c
+  else
+    bashdoc ~/.zshrc | sed 's/:.*$//g' | fzf --query="$1" --height 40% | xargs -0 -I {} /bin/zsh -c 'source ~/.zshrc; {}'
+  fi
+}
+
+function vimhelp() {
+      if [ -z "$1" ];
+    then
+    bashdoc ~/.vimrc -o "\"; \"\" @param @return \"- \"" -c
+  else
+   bashdoc ~/.vimrc -o "\"; \"\" @param @return \"- \"" | sed 's/:.*$//g'| fzf --query="$1" --height 40%
+  fi
+}
+
+#;
+# glsnips()
+# Display descriptions of all Dash Snippets
+# @param filter: Optional keyword to fuzzy search
+#"
+function glsnips() {
+      if [ -z "$1" ];
+    then
+    bashdoc ~/.dash-snippets -c
+  else
+    bashdoc ~/.dash-snippets | fzf --query="$1" --height 40% | sed 's/:.*$//g' | xargs -0 -I {} /bin/zsh -c 'source ~/.zshrc; {}'
+  fi
+}
+
+# METHODS
+# Syntax highlighted cat
+# ccat() {
+#   file=$1
+#   if [[ $file == *.md ]]; then
+#     mdv $file
+#   else
+#     pygmentize -g $file
+#   fi
+# }
+
+##  Fuzzy search brew
+#;
+# bip()
+# Fuzzy search brew
+# 
+#"
+function bip() {
+  local inst=$(brew search | fzf -m)
+
+  if [[ $inst ]]; then
+    for prog in $(echo $inst);
+    do; brew install $prog; done;
+  fi
+}
+
+## Git add, commit, and push
+#;
+# allgits()
+# Git add, commit, and push
+# @param msg: commit message
+#"
+function allgits() {
+  gaa;git cz -a; git push
+}
+
+#;
+# xi()
+# Open a document in Xi
+# @param path: file path to open
+#"
+function xi() {
+  if [ -f "$1" ]; then 
+  open -a XiEditor "$1"
+  else
+  touch "$1"
+  open -a XiEditor "$1"
+  fi
+}
+
+# helpme() {
+#   where=$1
+#   nospace=${where// /+}
+#   curl cht.sh/$nospace
+# }
+
+#;
+# fs()
+# Fuzzy file and directory search
+# - CTRL-O to open with `open` command,
+# - CTRL-E or Enter key to open with the $EDITOR
+# - CTRL-S to search inside files
+# - CTRL-C to copy file path to clipboard
+# - CTRL-D to cd to directory of file
+# - CTRL-N to make a new markdown file.
+#"
+function fs() {
+  local out file key
+  IFS=$'\n' out=($(fzf -i --preview="bat {}" --query="$1" --exit-0 --expect=ctrl-o,ctrl-e,ctrl-s,ctrl-m,ctrl-c,ctrl-d,ctrl-x,ctrl-n --bind '?:toggle-preview'))
+  key=$(head -1 <<< "$out")
+  file=$(head -2 <<< "$out" | tail -1)
+  esfile=$(printf %q "$file")
+  if [ -n "$file" ]; then
+    [ "$key" = ctrl-o ] && open "$file" ||
+    [ "$key" = ctrl-s ] && infile "$1" ||
+    [ "$key" = ctrl-c ] && echo "$file" | pbcopy || 
+    [ "$key" = ctrl-d ] && cd $(dirname "$file") ||
+    xi "$file"
+  fi
+}
+
+# [ "$key" = ctrl-n ] && xi "$1.md" ||Add when compatible
+
+function infile() {
+  rg "$1" | fzf --height 40% | sed 's/:.*$//g' | sed 's/ /\\ /g' | sed 's/&/\\&/g' | xargs -0 -I {} /bin/zsh -c 'vim {}'
+}
+
+
+function fuz() {
+  previous_file="$1"
+  file_to_edit=`select_file $previous_file`
+  if [ -n "$file_to_edit" ] ; then
+    macdown "$file_to_edit"
+  fi
+}
+
+function select_file() {
+  given_file="$1"
+  fzf --preview="pygmentize -g {}" --query="$given_file" --bind '?:toggle-preview'
+}
+
+function dtf() {
+  # rg $1 $(fzf --preview="pygmentize -g {}")
+  sk --ansi -c 'rg --color=always --line-number "{}"' -q $1
+}
+
+## Convert from gif or webm to mp4
+#;
+# 2mp4()
+# Convert from gif or webm to mp4 for all in current directory
+# @param type: mp4 or gif
+#"
+function 2mp4() {
+  type="$1"
+  if [[ $type = gif ]]; then
+    fd -e gif -x ffmpeg -i "{}" -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "{.}.mp4"
+  elif [[ $type = webm ]]; then
+    fd -e webm -x ffmpeg -fflags +genpts -i "{}" -r 25 "{.}.mp4"
+  else
+    echo "Invalid argument. Please choose gif or webm."
+  fi
+}
+
+## Remove an unwanted watched folder
+#;
+# gitrm()
+# Remove an unwanted watched folder
+# @param filename: file type to be removed from this folder
+#"
+function gitrm() {
+  git rm --cached --force -r "$1"
+}
+
+## Generate a .gitignore file for python projects
+#;
+# pygnore()
+# Generate a .gitignore file for python projects
+#"
+function pygnore() {
+  gi python,jetbrains+all,visualstudiocode > .gitignore
+}
+
+## Fuzzy search git branches
+#;
+# fbr()
+# Fuzzy search git branches
+#"
+function fbr() {
+  local branches branch
+  branches=$(git branch --all | rg -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+## Preview git tree
+#;
+# fshow()
+# Preview git tree
+#"
+function fshow() {
+  git log --graph --color=always \
+      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+  fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+      --bind "ctrl-m:execute:
+                (rg '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show --color=always % | less -R') << 'FZF-EOF'
+                {}
+FZF-EOF"
+}
+
+## Show uncommitted files
+#;
+# fstat()
+# Show uncommitted files
+# 
+#"
+function fstat() {
+  code $(git status --porcelain | rg -v '^[AMD]' | sed s/^...// | fzf -m)
+}
+
+# .gitignore file generator
+# gi() { 
+#   curl -L -s https://www.gitignore.io/api/$@ ;
+# }
+
+#!/bin/sh
+
+# Create useful gitignore files
+# Usage: gi [param]
+# param is a comma separated list of ignore profiles.
+# If param is ommited choose interactively.
+
+## # .gitignore file generator
+#;
+# gi()
+# .gitignore file generator
+# @param list: list of types to generator gitignore of
+#"
+function gi() {
+  curl -L -s https://www.gitignore.io/api/"$@"
+}
+
+## Initialize a git directory
+#;
+# setgit()
+# Initialize a git directory
+# @param giturl: url of git repo push to
+#"
+function setgit() {
+  git init; git add .; git commit -m "first commit"; git remote add origin "$1"; git push -u origin master
+}
+
+#;
+# gup()
+# set up stream of passed in branch to origin
+# @param branch: name of branch
+#"
+function gup() {
+  git push --set-upstream "$1"
+}
+
+## Open man page in Preview.app
+#;
+# psman()
+# Open man page in Preview.app
+# @param cli: command line function to call man on
+#"
+function psman() {
+	man -t "${1}" | open -f -a /Applications/Preview.app/
+}
+
+function ppundo() {
+  prev="$(history | tail -10 | rg "npm install" | fzf | awk '{print $NF}')"
+  echo $prev
+  "$1" uninstall "$prev"
+}
+
+# treeg() {
+#   tree -I "venv|node_modules|.git|.vscode|.idea"
+# }
+# EXTRANEOUS OPTIMIZATIONS
+defaults write -g KeyRepeat -int 1
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+# [[ -s "$HOME/.local/share/marker/marker.sh" ]] && source "$HOME/.local/share/marker/marker.sh"
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_COMMAND='rg --files --follow -g "!{.git,node_modules,venv}/*" 2> /dev/null'
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+# fpath=(~/.zsh_fns $fpath)
+# export FZF_DEFAULT_COMMAND='fd --type f'
+
+
+# ZSH STUFF
+# Set name of the theme to load. Optionally, if you set this to "random"
+# it'll load a random theme each time that oh-my-zsh is loaded.
+# See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
+# ZSH_THEME="refined"
+# robbyrussell as alternative theme
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion. Case
+# sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment the following line to disable bi-weekly auto-update checks.
+# DISABLE_AUTO_UPDATE="true"
+
+# Uncomment the following line to change how often to auto-update (in days).
+# export UPDATE_ZSH_DAYS=13
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# The optional three formats: "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
+# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(
+    git 
+    npm  
+    osx 
+    z 
+    zsh-syntax-highlighting 
+    zsh-autosuggestions
+    )
+
+source $ZSH/oh-my-zsh.sh
+
+# User configuration
+
+# export MANPATH="/usr/local/man:$MANPATH"
+
+# You may need to manually set your language environment
+# export LANG=en_US.UTF-8
+
+# Compilation flags
+# export ARCHFLAGS="-arch x86_64"
+
+# ssh
+export SSH_KEY_PATH="~/.ssh/rsa_id"
+
+# Set personal aliases, overriding those provided by oh-my-zsh libs,
+# plugins, and themes. Aliases can be placed here, though oh-my-zsh
+# users are encouraged to define aliases within the ZSH_CUSTOM folder.
+# For a full list of active aliases, run `alias`.
+#
+# Example aliases
+# alias ohmyzsh="mate ~/.oh-my-zsh"
+autoload -U promptinit; promptinit
+prompt pure
+# allow locally installed npm binaries to be executed;
+# added by `npm i -g add-local-binaries-to-path`
+
+# # tabtab source for serverless package
+# # uninstall by removing these lines or running `tabtab uninstall serverless`
+# [[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
+# # tabtab source for sls package
+# # uninstall by removing these lines or running `tabtab uninstall sls`
+# [[ -f /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /usr/local/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
