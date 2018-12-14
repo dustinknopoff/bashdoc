@@ -3,7 +3,9 @@ use colored::*;
 use dirs::home_dir;
 use glob::glob;
 use handlebars::{to_json, Handlebars};
+use nom::types::CompleteStr;
 use nom::*;
+use nom_locate::{position, LocatedSpan};
 use rayon::prelude::*;
 use serde_derive::*;
 use std::collections::HashMap;
@@ -12,6 +14,8 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+
+type Span<'a> = LocatedSpan<CompleteStr<'a>>;
 
 /// Represents a simple Key, Value pair
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
@@ -34,13 +38,14 @@ impl KV {
 }
 
 /// Represents a docstring
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Doc {
     short_description: String,
     long_description: String,
     descriptors: Vec<KV>,
     params: Vec<KV>,
     returns: Vec<KV>,
+    position: u32,
 }
 
 impl PartialEq for Doc {
@@ -119,6 +124,7 @@ fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
                 descriptors: desc.unwrap_or_default(),
                 params: par.unwrap_or_default(),
                 returns: ret.unwrap_or_default(),
+                position: 0
             })
     )
 }
@@ -126,10 +132,12 @@ fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
 impl Doc {
     /// Build a `Doc` from an array of strings
     /// Parse `Doc` fields.
-    pub fn make_doc(vector: String, delims: Delimiters) -> Doc {
+    fn make_doc(vector: &Extracted, delims: Delimiters) -> Doc {
         // println!("{:#?}", vector);
-        let result = parse_doc(&vector, delims);
-        result.expect("Parsing error.").1
+        let parsed = parse_doc(&vector.content, delims);
+        let mut result = parsed.expect("Parsing error.").1;
+        result.position = vector.position.line + 1;
+        result
     }
 }
 
@@ -148,14 +156,30 @@ impl DocFile {
     }
 }
 
+struct Extracted<'a> {
+    position: Span<'a>,
+    content: String,
+}
+
 /// Nom function to extract all docstring from a file.
-fn getinfo(input: &'static str, delims: Delimiters) -> IResult<&'static str, Vec<&'static str>> {
+fn getinfo(
+    input: Span<'static>,
+    delims: Delimiters,
+) -> IResult<Span<'static>, Vec<Extracted<'static>>> {
     many0!(
         input,
-        complete!(preceded!(
-            take_until_and_consume!(delims.start),
-            take_until_and_consume!(delims.end)
-        ))
+        do_parse!(
+            content:
+                complete!(preceded!(
+                    take_until_and_consume!(delims.start),
+                    take_until_and_consume!(delims.end)
+                ))
+                >> pos: position!()
+                >> (Extracted {
+                    position: pos,
+                    content: content.to_string()
+                })
+        )
     )
 }
 
@@ -165,25 +189,25 @@ fn getinfo(input: &'static str, delims: Delimiters) -> IResult<&'static str, Vec
 /// and adds every line to a `Vec` until the end delimiter.
 ///
 /// A final `Vec` of the collected comment strings is returned.
-fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<&'a str> {
+fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>> {
     let mut f = File::open(&p).expect("file not found.");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).unwrap();
     let used = Box::leak(buffer.into_boxed_str());
     // println!("{:#?}", used);
-    let result = getinfo(used, delims);
+    let result = getinfo(Span::new(CompleteStr(used)), delims);
     // println!("{:#?}", result);
     result.unwrap().1
 }
 
 /// Given a `Vec<str>` make a `DocFile`
-fn generate_doc_file(docs: &[&str], fname: String, delims: Delimiters) -> DocFile {
+fn generate_doc_file(docs: &Vec<Extracted<'static>>, fname: String, delims: Delimiters) -> DocFile {
     let mut all_docs: DocFile = Default::default();
     all_docs.filename = fname;
     let collected: Vec<Doc> = docs
         .par_iter()
-        .filter(|x| !x.is_empty())
-        .map(|x| Doc::make_doc(x.to_string(), delims))
+        .filter(|x| !x.content.is_empty())
+        .map(|x| Doc::make_doc(x, delims))
         .collect();
     all_docs.thedocs = collected;
     all_docs

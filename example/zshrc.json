@@ -7,84 +7,96 @@
           "long_description": "re-initialize .zshrc file",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 26
         },
         {
           "short_description": "zshconfig",
           "long_description": "open .zshrc in VSCode",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 32
         },
         {
           "short_description": "vimconfig",
           "long_description": "open .vimrc in vim",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 38
         },
         {
           "short_description": "docs",
           "long_description": "shortcut to ~/Documents folder",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 47
         },
         {
           "short_description": "svenv",
           "long_description": "activate virtual python environment",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 53
         },
         {
           "short_description": "update",
           "long_description": "update Operating System, Brew, NPM, Applications, and Pip",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 63
         },
         {
           "short_description": "cleanup",
           "long_description": "remove .DS_Store files from current directory",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 69
         },
         {
           "short_description": "emptytrash",
           "long_description": "clean the trash",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 75
         },
         {
           "short_description": "helpme",
           "long_description": "access cht.sh for help with commands and languages",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 82
         },
         {
           "short_description": "cloud",
           "long_description": "shortcut to iCloud documents",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 88
         },
         {
           "short_description": "notes",
           "long_description": "shortcut to exported Notes",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 94
         },
         {
           "short_description": "gits",
           "long_description": "Shortcut to ~/Documents/Gits",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 100
         },
         {
           "short_description": "glsnips()",
@@ -96,14 +108,16 @@
               "value": "Optional keyword to fuzzy search"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 125
         },
         {
           "short_description": "bip()",
           "long_description": "Fuzzy search brew",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 151
         },
         {
           "short_description": "allgits()",
@@ -115,7 +129,8 @@
               "value": "commit message"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 166
         },
         {
           "short_description": "xi()",
@@ -127,7 +142,8 @@
               "value": "file path to open"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 175
         },
         {
           "short_description": "fs()",
@@ -159,7 +175,8 @@
             }
           ],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 200
         },
         {
           "short_description": "2mp4()",
@@ -171,7 +188,8 @@
               "value": "mp4 or gif"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 246
         },
         {
           "short_description": "gitrm()",
@@ -183,35 +201,40 @@
               "value": "file type to be removed from this folder"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 263
         },
         {
           "short_description": "pygnore()",
           "long_description": "Generate a .gitignore file for python projects",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 272
         },
         {
           "short_description": "fbr()",
           "long_description": "Fuzzy search git branches",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 281
         },
         {
           "short_description": "fshow()",
           "long_description": "Preview git tree",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 294
         },
         {
           "short_description": "fstat()",
           "long_description": "Show uncommitted files",
           "descriptors": [],
           "params": [],
-          "returns": []
+          "returns": [],
+          "position": 311
         },
         {
           "short_description": "gi()",
@@ -223,7 +246,8 @@
               "value": "list of types to generator gitignore of"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 333
         },
         {
           "short_description": "setgit()",
@@ -235,7 +259,8 @@
               "value": "url of git repo push to"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 343
         },
         {
           "short_description": "gup()",
@@ -247,7 +272,8 @@
               "value": "name of branch"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 352
         },
         {
           "short_description": "psman()",
@@ -259,10 +285,11 @@
               "value": "command line function to call man on"
             }
           ],
-          "returns": []
+          "returns": [],
+          "position": 362
         }
       ],
-      "filename": ".zshrc"
+      "filename": "zshrc"
     }
   ]
 }
