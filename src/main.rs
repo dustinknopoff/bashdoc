@@ -47,7 +47,7 @@ mod docs;
 use crate::docs::*;
 use clap::{load_yaml, App, ArgMatches};
 use dirs::home_dir;
-use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
@@ -98,16 +98,27 @@ fn watcher<'a>(matches: &'a ArgMatches<'a>) {
     generate(matches);
     let (tx, rx) = channel();
     let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2)).unwrap();
-    let path = matches
-        .value_of("INPUT")
-        .unwrap()
-        .replace("~", home_dir().unwrap().to_str().unwrap());
+    let path: String = if cfg!(windows) {
+        String::from(matches.value_of("INPUT").unwrap())
+    } else {
+        matches
+            .value_of("INPUT")
+            .unwrap()
+            .replace("~", home_dir().unwrap().to_str().unwrap())
+    };
     watcher.watch(&path, RecursiveMode::Recursive).unwrap();
     println!("Watching for changes in {}...", path);
     loop {
         match rx.recv() {
-            Ok(_) => {
+            Ok(event) => {
                 generate(&matches);
+                match event {
+                    DebouncedEvent::Write(e) => println!(
+                        "Bashdoc updated to match changes to {}.",
+                        e.as_path().file_name().unwrap().to_str().unwrap()
+                    ),
+                    _ => (),
+                }
             }
             Err(e) => println!("watch error: {:?}", e),
         }
