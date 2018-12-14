@@ -67,6 +67,7 @@ FLAGS:
     -d, --directory    pass a glob pattern to run on.
         --help         Prints help information
     -V, --version      Prints version information
+    -w, --watch        continuously update on change
 
 OPTIONS:
     -h, --html <html>    output html documentation
