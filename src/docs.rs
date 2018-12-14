@@ -1,3 +1,4 @@
+use clap::ArgMatches;
 use colored::*;
 use dirs::home_dir;
 use glob::glob;
@@ -115,9 +116,9 @@ fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
             >> (Doc {
                 short_description: short.to_string(),
                 long_description: long.unwrap_or("").to_string(),
-                descriptors: desc.unwrap_or(Vec::new()),
-                params: par.unwrap_or(Vec::new()),
-                returns: ret.unwrap_or(Vec::new()),
+                descriptors: desc.unwrap_or_default(),
+                params: par.unwrap_or_default(),
+                returns: ret.unwrap_or_default(),
             })
     )
 }
@@ -364,20 +365,26 @@ impl<'a> Default for Delimiters<'a> {
 
 impl<'a> Delimiters<'a> {
     /// Override default delimiters with passed in values
-    pub fn override_delims(overrides: String) -> Self {
+    pub fn override_delims(overrides: &'a ArgMatches<'a>) -> Self {
         let mut result: Delimiters = Delimiters::default();
-        let splitted: Vec<_> = Box::leak(overrides.into_boxed_str())
-            .split_whitespace()
-            .collect();
-        if splitted.len() != 6 {
-            panic!("Please enter the proper number of delimiters");
+        if overrides.is_present("start") {
+            result.start = overrides.value_of("start").unwrap();
         }
-        result.start = &splitted[0];
-        result.end = &splitted[1];
-        result.params = &splitted[2];
-        result.ret = &splitted[3];
-        result.opt = &splitted[4];
-        result.comm = &splitted[5];
+        if overrides.is_present("end") {
+            result.end = overrides.value_of("end").unwrap();
+        }
+        if overrides.is_present("descriptor") {
+            result.opt = overrides.value_of("descriptor").unwrap();
+        }
+        if overrides.is_present("params") {
+            result.params = overrides.value_of("params").unwrap();
+        }
+        if overrides.is_present("returns") {
+            result.ret = overrides.value_of("returns").unwrap();
+        }
+        if overrides.is_present("comment") {
+            result.comm = overrides.value_of("comment").unwrap();
+        }
         result
     }
 

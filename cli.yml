@@ -1,4 +1,7 @@
 about: 'Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.'
+author: "Dustin Knopoff <dustinknopoff@gmail.com>"
+name: bashdoc
+version: "1.0"
 args:
   - color:
       help: "toggles color"
@@ -18,16 +21,46 @@ args:
       short: j
       takes_value: true
       value_name: FILE
-  - override:
-      help: override delimiters for this call.
-      short: o
-      long: override
-      takes_value: true
   - html:
       help: output html documentation
       short: h
       long: html
       takes_value: true
-author: "Dustin Knopoff <dustinknopoff@gmail.com>"
-name: bashdoc
-version: "1.0"
+  - watch:
+      help: continuously update on change
+      short: w
+      long: watch
+subcommands:
+  - override:
+      about: override the delimiters
+      args:
+        - start:
+            short: s
+            long: start
+            help: delimiter for start
+            takes_value: true
+        - end:
+            short: e
+            long: end
+            help: delimiter for start
+            takes_value: true
+        - descriptor:
+            short: d
+            long: desc
+            help: delimiter for descriptors
+            takes_value: true
+        - params:
+            short: p
+            long: param
+            help: delimiter for parameters
+            takes_value: true
+        - returns:
+            short: r
+            long: ret
+            help: delimiter for return values
+            takes_value: true
+        - comment:
+            short: c
+            long: comment
+            help: delimiter for comments
+            takes_value: true

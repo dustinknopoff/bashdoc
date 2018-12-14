@@ -45,15 +45,26 @@
 //!
 mod docs;
 use crate::docs::*;
-use clap::{load_yaml, App};
+use clap::{load_yaml, App, ArgMatches};
+use dirs::home_dir;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 fn main() {
     let yaml = load_yaml!("../cli.yml");
     let matches = App::from_yaml(yaml).get_matches();
-    let delims = if matches.is_present("override") {
-        Delimiters::override_delims(matches.value_of("override").unwrap().to_string())
+    if matches.is_present("watch") {
+        watcher(&matches);
     } else {
-        Delimiters::get_delims()
+        generate(&matches);
+    }
+}
+
+fn generate<'a>(matches: &'a ArgMatches<'a>) {
+    let delims = match matches.subcommand() {
+        ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
+        _ => Delimiters::get_delims(),
     };
     let all_em = if matches.is_present("directory") {
         start(
@@ -79,6 +90,26 @@ fn main() {
             } else {
                 printer(doc);
             }
+        }
+    }
+}
+
+fn watcher<'a>(matches: &'a ArgMatches<'a>) {
+    generate(matches);
+    let (tx, rx) = channel();
+    let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2)).unwrap();
+    let path = matches
+        .value_of("INPUT")
+        .unwrap()
+        .replace("~", home_dir().unwrap().to_str().unwrap());
+    watcher.watch(&path, RecursiveMode::Recursive).unwrap();
+    println!("Watching for changes in {}...", path);
+    loop {
+        match rx.recv() {
+            Ok(_) => {
+                generate(&matches);
+            }
+            Err(e) => println!("watch error: {:?}", e),
         }
     }
 }

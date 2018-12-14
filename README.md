@@ -60,7 +60,7 @@ Creates a "javadoc" like structure for bash. See github repo github.com/dustinkn
 formatting.
 
 USAGE:
-    bashdoc [FLAGS] [OPTIONS] <INPUT>
+    bashdoc [FLAGS] [OPTIONS] <INPUT> [SUBCOMMAND]
 
 FLAGS:
     -c, --color        toggles color
@@ -69,10 +69,13 @@ FLAGS:
     -V, --version      Prints version information
 
 OPTIONS:
-    -h, --html <html>            output html documentation
-    -j, --json <FILE>            print result as JSON
-    -o, --override <override>    override delimiters for this call.
+    -h, --html <html>    output html documentation
+    -j, --json <FILE>    print result as JSON
 
 ARGS:
     <INPUT>    Sets the input file to use
+
+SUBCOMMANDS:
+    help        Prints this message or the help of the given subcommand(s)
+    override    override the delimiters
 ```
