@@ -56,7 +56,7 @@ cargo install
 
 ### Usage
 
-```
+```bash
 bashdoc 1.0
 Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
 formatting.
@@ -82,3 +82,4 @@ SUBCOMMANDS:
    help        Prints this message or the help of the given subcommand(s)
    override    override the delimiters
 ```
+

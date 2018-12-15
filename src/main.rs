@@ -54,7 +54,7 @@
 //!
 //!## Usage
 //!
-//!```
+//!```bash
 //!bashdoc 1.0
 //!Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
 //!formatting.
