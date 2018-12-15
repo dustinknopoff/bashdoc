@@ -124,9 +124,9 @@ fn generate<'a>(matches: &'a ArgMatches<'a>) {
     } else {
         for doc in &all_em {
             if matches.is_present("color") {
-                colorize(doc);
+                printer(doc, true);
             } else {
-                printer(doc);
+                printer(doc, false);
             }
         }
     }

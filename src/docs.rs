@@ -162,7 +162,7 @@ struct Extracted<'a> {
 }
 
 /// Nom function to extract all docstring from a file.
-fn getinfo(
+fn parse_strings_from_file(
     input: Span<'static>,
     delims: Delimiters,
 ) -> IResult<Span<'static>, Vec<Extracted<'static>>> {
@@ -189,13 +189,13 @@ fn getinfo(
 /// and adds every line to a `Vec` until the end delimiter.
 ///
 /// A final `Vec` of the collected comment strings is returned.
-fn get_info<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>> {
+fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>> {
     let mut f = File::open(&p).expect("file not found.");
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).unwrap();
     let used = Box::leak(buffer.into_boxed_str());
     // println!("{:#?}", used);
-    let result = getinfo(Span::new(CompleteStr(used)), delims);
+    let result = parse_strings_from_file(Span::new(CompleteStr(used)), delims);
     // println!("{:#?}", result);
     result.unwrap().1
 }
@@ -225,7 +225,7 @@ pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
         let every_doc: Vec<DocFile> = files
             .par_iter()
             .map(|entry| {
-                let docs = get_info(&entry, delims);
+                let docs = get_strings_from_file(&entry, delims);
                 generate_doc_file(
                     &docs,
                     entry.file_name().unwrap().to_str().unwrap().to_string(),
@@ -235,7 +235,7 @@ pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
             .collect();
         every_doc
     } else {
-        let docs = get_info(&Path::new(&p), delims);
+        let docs = get_strings_from_file(&Path::new(&p), delims);
         let all_docs = generate_doc_file(
             &docs,
             Path::new(&dir)
@@ -286,45 +286,44 @@ pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
 ///     CTRL-O pushs the boundaries
 /// runner - location, filename: This is the beginning
 /// ```
-pub fn colorize(thedocs: &DocFile) {
-    println!(
-        "{}: {}",
-        "Help".green().underline(),
-        thedocs.filename.green().underline()
-    );
-    for doc in &thedocs.thedocs {
-        let params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
-        let as_string = params.join(", ");
-        print!("{}", doc.short_description.replace("()", "").blue().bold());
-        if doc.params.is_empty() {
-            println!(": {}", doc.long_description);
-        } else {
-            println!(" - {}: {}", as_string.cyan(), doc.long_description);
+pub fn printer(thedocs: &DocFile, use_color: bool) {
+    if use_color {
+        println!(
+            "{}: {}",
+            "Help".green().underline(),
+            thedocs.filename.green().underline()
+        );
+        for doc in &thedocs.thedocs {
+            let params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
+            let as_string = params.join(", ");
+            print!("{}", doc.short_description.replace("()", "").blue().bold());
+            if doc.params.is_empty() {
+                println!(": {}", doc.long_description);
+            } else {
+                println!(" - {}: {}", as_string.cyan(), doc.long_description);
+            }
+            if !doc.descriptors.is_empty() {
+                doc.descriptors
+                    .iter()
+                    .for_each(|x| println!("\t{} {}", &x.key.yellow().bold(), x.value));
+            }
         }
-        if !doc.descriptors.is_empty() {
-            doc.descriptors
-                .iter()
-                .for_each(|x| println!("\t{} {}", &x.key.yellow().bold(), x.value));
-        }
-    }
-}
-
-/// Color free version of `colorize`
-pub fn printer(thedocs: &DocFile) {
-    println!("Help: {}", thedocs.filename);
-    for doc in &thedocs.thedocs {
-        let params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
-        let as_string = params.join(", ");
-        print!("{}", doc.short_description.replace("()", ""));
-        if doc.params.is_empty() {
-            println!(": {}", doc.long_description);
-        } else {
-            println!(" - {}: {}", as_string, doc.long_description);
-        }
-        if !doc.descriptors.is_empty() {
-            doc.descriptors
-                .iter()
-                .for_each(|x| println!("\t{} {}", &x.key, x.value));
+    } else {
+        println!("Help: {}", thedocs.filename);
+        for doc in &thedocs.thedocs {
+            let params: Vec<&str> = doc.params.iter().map(|x| x.key.as_str()).collect();
+            let as_string = params.join(", ");
+            print!("{}", doc.short_description.replace("()", ""));
+            if doc.params.is_empty() {
+                println!(": {}", doc.long_description);
+            } else {
+                println!(" - {}: {}", as_string, doc.long_description);
+            }
+            if !doc.descriptors.is_empty() {
+                doc.descriptors
+                    .iter()
+                    .for_each(|x| println!("\t{} {}", &x.key, x.value));
+            }
         }
     }
 }
