@@ -201,7 +201,7 @@ fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>>
 }
 
 /// Given a `Vec<str>` make a `DocFile`
-fn generate_doc_file(docs: &Vec<Extracted<'static>>, fname: String, delims: Delimiters) -> DocFile {
+fn generate_doc_file(docs: &[Extracted<'static>], fname: String, delims: Delimiters) -> DocFile {
     let mut all_docs: DocFile = Default::default();
     all_docs.filename = fname;
     let collected: Vec<Doc> = docs

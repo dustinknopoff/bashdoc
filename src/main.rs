@@ -150,12 +150,11 @@ fn watcher<'a>(matches: &'a ArgMatches<'a>) {
         match rx.recv() {
             Ok(event) => {
                 generate(&matches);
-                match event {
-                    DebouncedEvent::Write(e) => println!(
+                if let DebouncedEvent::Write(e) = event {
+                    println!(
                         "Bashdoc updated to match changes to {}.",
                         e.as_path().file_name().unwrap().to_str().unwrap()
-                    ),
-                    _ => (),
+                    );
                 }
             }
             Err(e) => println!("watch error: {:?}", e),
