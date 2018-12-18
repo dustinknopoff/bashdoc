@@ -2,6 +2,12 @@
 name = "bashdoc"
 version = "0.4.0"
 edition = "2018"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "cli.yml",
+    "static/*.hbs"
+]
 
 [dependencies]
 colored = "1.6"
