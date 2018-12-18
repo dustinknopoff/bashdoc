@@ -1,13 +1,18 @@
 [package]
 name = "bashdoc"
 version = "0.4.0"
+authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
+description = """
+A tool for generating documentation/help menu for user defined bash functions.
+"""
 edition = "2018"
-include = [
-    "**/*.rs",
-    "Cargo.toml",
-    "cli.yml",
-    "static/*.hbs"
-]
+homepage = "https://github.com/dustinknopoff/bashdoc"
+repository = "https://github.com/dustinknopoff/bashdoc"
+readme = "README.md"
+keywords = ["bash", "docs"]
+categories = ["command-line-utilities", "parsing"]
+license = "Unlicense OR MIT"
+exclude = ["example/**"]
 
 [dependencies]
 colored = "1.6"
