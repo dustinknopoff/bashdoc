@@ -11,8 +11,11 @@ repository = "https://github.com/dustinknopoff/bashdoc"
 readme = "README.md"
 keywords = ["bash", "docs"]
 categories = ["command-line-utilities", "parsing"]
-license = "Unlicense OR MIT"
+license = "MIT"
 exclude = ["example/**"]
+
+[badges]
+maintenance = { status = "experimental" }
 
 [dependencies]
 colored = "1.6"
