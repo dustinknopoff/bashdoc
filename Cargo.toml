@@ -1,6 +1,6 @@
 [package]
 name = "bashdoc"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
 description = """
 A tool for generating documentation/help menu for user defined bash functions.
@@ -12,7 +12,7 @@ readme = "README.md"
 keywords = ["bash", "docs"]
 categories = ["command-line-utilities", "parsing"]
 license = "MIT"
-exclude = ["example/**"]
+exclude = ["example/**", ".idea/**"]
 
 [badges]
 maintenance = { status = "experimental" }
