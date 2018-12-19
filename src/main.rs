@@ -87,6 +87,8 @@
 //!    override    override the delimiters
 //!```
 //!
+//! See the [examples](../examples) folder for more.
+//!
 mod docs;
 use crate::docs::*;
 use clap::{load_yaml, App, ArgMatches};

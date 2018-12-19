@@ -89,5 +89,7 @@ SUBCOMMANDS:
    override    override the delimiters
 ```
 
+See the [examples](../examples) folder for more.
+
 
 License: MIT
