@@ -42,6 +42,12 @@
 //!
 //!## Install
 //!
+//! ```bash
+//! cargo install bashdoc
+//! ```
+//!
+//! or from source
+//!
 //!**NOTE: Must use Rust 2018 Edition**
 //!
 //!_update with `rustup update stable`_
