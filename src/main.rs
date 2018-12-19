@@ -55,7 +55,7 @@
 //!```bash
 //!git clone https://github.com/dustinknopoff/bashdoc
 //!cd bashdoc
-//!cargo install
+//!cargo install --path . --force
 //!```
 //!
 //!## Usage
