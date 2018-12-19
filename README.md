@@ -22,7 +22,7 @@ cd() {
 
 Outputs
 
-![](./example/zshrc.png)
+![](https://github.com/dustinknopoff/bashdoc/blob/master/example/zshrc.png)
 
 with lots of color!
 

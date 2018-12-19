@@ -9,10 +9,10 @@ edition = "2018"
 homepage = "https://github.com/dustinknopoff/bashdoc"
 repository = "https://github.com/dustinknopoff/bashdoc"
 readme = "README.md"
-keywords = ["bash", "docs"]
-categories = ["command-line-utilities", "parsing"]
+keywords = ["bash", "docs", "documentation"]
+categories = ["command-line-utilities", "text-processing"]
 license = "MIT"
-exclude = ["example/**", ".idea/**"]
+exclude = ["example/**", ".idea/**", "backdocrc.toml"]
 
 [badges]
 maintenance = { status = "experimental" }

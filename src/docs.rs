@@ -433,6 +433,7 @@ impl<'a> Delimiters<'a> {
                 let mut path = home_dir().unwrap();
                 path.push(".bashdocrc");
                 fs::write(path.to_str().unwrap(), content).unwrap();
+                env::set_var("BASHDOC_CONFIG_PATH", path);
                 delimiters
             }
         }
