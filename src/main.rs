@@ -87,7 +87,7 @@
 //!    override    override the delimiters
 //!```
 //!
-//! See the [examples](../examples) folder for more.
+//! See the [examples](https://github.com/dustinknopoff/bashdoc/tree/master/example) folder for more.
 //!
 mod docs;
 use crate::docs::*;
