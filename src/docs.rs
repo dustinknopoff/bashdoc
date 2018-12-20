@@ -85,6 +85,7 @@ fn as_kv_whitespace(input: &str) -> Result<KV, nom::ErrorKind> {
 }
 
 /// Nom function to convert a given string in to a `Doc`
+#[allow(clippy::cyclomatic_complexity)]
 fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
     do_parse!(
         input,
