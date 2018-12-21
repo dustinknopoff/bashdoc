@@ -8,13 +8,7 @@ use nom::*;
 use nom_locate::{position, LocatedSpan};
 use rayon::prelude::*;
 use serde_derive::*;
-use std::collections::HashMap;
-use std::env;
-use std::fs;
-use std::fs::File;
-use std::io::prelude::*;
-use std::path::Path;
-
+use std::{collections::HashMap, env, fs, fs::File, io::prelude::*, path::Path, process::exit};
 type Span<'a> = LocatedSpan<CompleteStr<'a>>;
 
 /// Represents a simple Key, Value pair
@@ -198,7 +192,13 @@ fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>>
     // println!("{:#?}", used);
     let result = parse_strings_from_file(Span::new(CompleteStr(used)), delims);
     // println!("{:#?}", result);
-    result.unwrap().1
+    match result {
+        Ok(r) => r.1,
+        Err(e) => {
+                    println!("Error parsing {}", p.display());
+                    exit(1);
+        },
+    }
 }
 
 /// Given a `Vec<str>` make a `DocFile`
@@ -345,21 +345,41 @@ pub fn write_json(docstrings: &[DocFile], file_name: &str) {
         .expect("Could not write to file.");
 }
 
-pub fn to_html(docstrings: &[DocFile], dir: &str) {
+pub fn to_html(docstrings: &[DocFile], dir: Option<&str>, template_loc: Option<&str>) {
     for dfile in docstrings {
         let json = to_json(dfile);
         let handlebars = Handlebars::new();
-        let mut template = File::open("./static/template.hbs").unwrap();
-        let mut output = if dir.len() == 1 {
-            File::create(format!("{}.html", dfile.filename).as_str())
-                .expect("File cannot be created")
-        } else {
-            File::create(format!("{}/{}.html", dir, dfile.filename).as_str())
-                .expect("File cannot be created")
+        let mut template = match template_loc {
+            Some(m) => match File::open(m) {
+                Ok(o) => o,
+                Err(_) => {
+                    println!("Provided path is invalid");
+                    exit(1);
+                }
+            },
+            None => File::open("./static/template.hbs").unwrap(),
         };
-        handlebars
-            .render_template_source_to_write(&mut template, &json, &mut output)
-            .unwrap();
+        // let mut template = File::open("./static/template.hbs").unwrap();
+        let mut output = match dir {
+            Some(d) if Path::new(d).is_dir() => {
+                File::create(format!("{}/{}.html", d, dfile.filename).as_str())
+                    .expect("File could not be created")
+            }
+            None | Some(_) => {
+                println!("Provided path is invalid");
+                exit(1);
+            }
+        };
+        // let mut output = if dir.len() == 1 {
+        //     File::create(format!("{}.html", dfile.filename).as_str())
+        //         .expect("File cannot be created")
+        // } else {
+        //     File::create(format!("{}/{}.html", dir, dfile.filename).as_str())
+        //         .expect("File cannot be created")
+        // };
+        match handlebars
+            .render_template_source_to_write(&mut template, &json, &mut output).expect("Could not generate documentation");
+        
     }
 }
 
@@ -437,6 +457,83 @@ impl<'a> Delimiters<'a> {
                 env::set_var("BASHDOC_CONFIG_PATH", path);
                 delimiters
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    mod kv_tests {
+        use super::*;
+        #[test]
+        fn new_kv() {
+            let kv = KV::new(String::from("a"), String::from("b"));
+            assert_eq!(String::from("a"), kv.key);
+            assert_eq!(String::from("b"), kv.value);
+        }
+
+        #[test]
+        fn cmp_kv() {
+            let kv1 = KV::new(String::from("a"), String::from("b"));
+            let kv2 = KV::new(String::from("a"), String::from("b"));
+            let kv = KV::new(String::from("b"), String::from("a"));
+            assert_eq!(kv1, kv2);
+            assert_ne!(kv1, kv);
+        }
+
+        #[test]
+        fn is_as_kv() {
+            let conv = as_kv("type: mp4 or gif");
+            assert_eq!(
+                KV {
+                    key: String::from("type"),
+                    value: String::from("mp4 or gif")
+                },
+                conv.unwrap()
+            );
+        }
+
+        #[test]
+        fn is_as_kv_white() {
+            let conv = as_kv_whitespace("CTRL-O to open with `open` command,");
+            assert_eq!(
+                KV {
+                    key: String::from("CTRL-O"),
+                    value: String::from("to open with `open` command,")
+                },
+                conv.unwrap()
+            );
+        }
+    }
+
+    mod docfile_tests {
+        use super::*;
+        #[test]
+        fn test_add() {
+            let mut dfile = DocFile {
+                thedocs: Vec::new(),
+                filename: String::from("zshrc"),
+            };
+            dfile.add(Doc {
+                short_description: String::from("lala"),
+                long_description: String::from("rawr"),
+                descriptors: Vec::new(),
+                params: Vec::new(),
+                returns: Vec::new(),
+                position: 0,
+            });
+            assert_eq!(
+                dfile.thedocs,
+                [Doc {
+                    short_description: String::from("lala"),
+                    long_description: String::from("rawr"),
+                    descriptors: Vec::new(),
+                    params: Vec::new(),
+                    returns: Vec::new(),
+                    position: 0,
+                }]
+            );
         }
     }
 }

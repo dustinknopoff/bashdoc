@@ -94,8 +94,7 @@ use crate::docs::*;
 use clap::{load_yaml, App, ArgMatches};
 use dirs::home_dir;
 use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
-use std::sync::mpsc::channel;
-use std::time::Duration;
+use std::{process::exit, sync::mpsc::channel, time::Duration};
 
 fn main() {
     let yaml = load_yaml!("../cli.yml");
@@ -127,8 +126,12 @@ fn generate<'a>(matches: &'a ArgMatches<'a>) {
     };
     if matches.is_present("json") {
         write_json(&all_em, matches.value_of("json").unwrap());
-    } else if matches.is_present("html") {
-        to_html(&all_em, matches.value_of("html").unwrap());
+    } else if matches.is_present("location") {
+        to_html(
+            &all_em,
+            matches.value_of("location"),
+            matches.value_of("template"),
+        );
     } else {
         for doc in &all_em {
             if matches.is_present("color") {
@@ -143,7 +146,13 @@ fn generate<'a>(matches: &'a ArgMatches<'a>) {
 fn watcher<'a>(matches: &'a ArgMatches<'a>) {
     generate(matches);
     let (tx, rx) = channel();
-    let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2)).unwrap();
+    let mut watcher: RecommendedWatcher = match Watcher::new(tx, Duration::from_secs(2)) {
+        Ok(d) => d,
+        Err(_) => {
+            println!("Provided path is invalid");
+            exit(1);
+        }
+    };
     let path: String = if cfg!(windows) {
         String::from(matches.value_of("INPUT").unwrap())
     } else {

@@ -1,7 +1,7 @@
 about: 'Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.'
 author: "Dustin Knopoff <dustinknopoff@gmail.com>"
 name: bashdoc
-version: "0.4.0"
+version: "0.4.6"
 args:
   - color:
       help: "toggles color"
@@ -21,15 +21,22 @@ args:
       short: j
       takes_value: true
       value_name: FILE
-  - html:
-      help: output html documentation
-      short: h
-      long: html
-      takes_value: true
   - watch:
       help: continuously update on change
       short: w
       long: watch
+  - location:
+      short: l
+      long: location
+      help: location to save HTML
+      takes_value: true
+      required: true
+  - template:
+      short: t
+      long: template
+      help: .hbs template to use for generation of documentation
+      takes_value: true
+      requires: location
 subcommands:
   - override:
       about: override the delimiters
