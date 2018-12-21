@@ -2,11 +2,13 @@
 
 ## BashDoc
 
-A tool for generating documentation/help menu for user defined bash functions.
+A tool for generating documentation/help menu for ~~user defined bash functions~~ any folder or file with 6 generic delimiters defined.
 
 ### Syntax
 
 #### Example
+
+Using syntax similar to below
 
 ```bash
 #;
@@ -20,13 +22,15 @@ cd() {
 }
 ```
 
-Outputs
+on my `zshrc` Outputs
 
 ![](https://github.com/dustinknopoff/bashdoc/raw/master/example/zshrc.png)
 
 with lots of color!
 
 #### Global Delimiters
+
+The default delimiters to use are as follows:
 
 `START_DELIM = #;`
 
@@ -64,7 +68,6 @@ cargo install --path . --force
 
 ```bash
 bashdoc 0.4.7
-Dustin Knopoff <dustinknopoff@gmail.com>
 Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
 formatting.
 
@@ -102,5 +105,6 @@ See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGEL
 - v.0.4.5 - Fix error where bashdoc would not function for users without a `~/.bashdocrc`
 - v.0.4.6 - Improved Error handling, `--html` argument removed replaced with `--location`, `--template` argument added for supplying custom `.hbs`
 - v0.4.7 - Fix required location for all inputs and not exclusive to `--location`
+- v0.4.8 - Clearer README, link to docs.rs documentation
 
 License: MIT
