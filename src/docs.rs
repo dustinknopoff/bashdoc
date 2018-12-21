@@ -194,7 +194,7 @@ fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>>
     // println!("{:#?}", result);
     match result {
         Ok(r) => r.1,
-        Err(e) => {
+        Err(_) => {
             println!("Error parsing {}", p.display());
             exit(1);
         }

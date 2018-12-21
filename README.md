@@ -90,6 +90,7 @@ SUBCOMMANDS:
 ```
 
 See the [examples](https://github.com/dustinknopoff/bashdoc/tree/master/example) folder for more.
+
 See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGELOG.md) for updates
 
 License: MIT
