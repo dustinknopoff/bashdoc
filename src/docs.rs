@@ -195,9 +195,9 @@ fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>>
     match result {
         Ok(r) => r.1,
         Err(e) => {
-                    println!("Error parsing {}", p.display());
-                    exit(1);
-        },
+            println!("Error parsing {}", p.display());
+            exit(1);
+        }
     }
 }
 
@@ -377,9 +377,9 @@ pub fn to_html(docstrings: &[DocFile], dir: Option<&str>, template_loc: Option<&
         //     File::create(format!("{}/{}.html", dir, dfile.filename).as_str())
         //         .expect("File cannot be created")
         // };
-        match handlebars
-            .render_template_source_to_write(&mut template, &json, &mut output).expect("Could not generate documentation");
-        
+        handlebars
+            .render_template_source_to_write(&mut template, &json, &mut output)
+            .expect("Could not generate documentation");
     }
 }
 
