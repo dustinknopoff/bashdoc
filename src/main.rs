@@ -20,7 +20,7 @@
 //!
 //!Outputs
 //!
-//!![](https://github.com/dustinknopoff/bashdoc/blob/master/example/zshrc.png)
+//!![](https://github.com/dustinknopoff/bashdoc/raw/master/example/zshrc.png)
 //!
 //!with lots of color!
 //!
