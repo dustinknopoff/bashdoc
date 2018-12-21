@@ -92,6 +92,14 @@
 //! See the [examples](https://github.com/dustinknopoff/bashdoc/tree/master/example) folder for more.
 //!
 //! See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGELOG.md) for updates
+//!
+//! # Changelog
+//!
+//!- v0.4.0 - Added to crates.io
+//!- v0.4.1/v0.4.2 - Better descriptions for crates.io
+//!- v.0.4.5 - Fix error where bashdoc would not function for users without a `~/.bashdocrc`
+//!- v.0.4.6 - Improved Error handling, `--html` argument removed replaced with `--location`, `--template` argument added for supplying custom `.hbs`
+//!- v0.4.7 - Fix required location for all inputs and not exclusive to `--location`
 mod docs;
 use crate::docs::runners::*;
 use clap::{load_yaml, App};

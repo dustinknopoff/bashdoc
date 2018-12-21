@@ -8,6 +8,7 @@ A tool for generating documentation/help menu for user defined bash functions.
 edition = "2018"
 homepage = "https://github.com/dustinknopoff/bashdoc"
 repository = "https://github.com/dustinknopoff/bashdoc"
+documentation = "https://docs.rs/crate/bashdoc"
 readme = "README.md"
 keywords = ["bash", "docs", "documentation"]
 categories = ["command-line-utilities", "text-processing"]
