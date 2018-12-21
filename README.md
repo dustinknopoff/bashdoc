@@ -63,7 +63,8 @@ cargo install --path . --force
 ### Usage
 
 ```bash
-bashdoc 1.0
+bashdoc 0.4.7
+Dustin Knopoff <dustinknopoff@gmail.com>
 Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
 formatting.
 
@@ -73,13 +74,14 @@ USAGE:
 FLAGS:
    -c, --color        toggles color
    -d, --directory    pass a glob pattern to run on.
-       --help         Prints help information
+   -h, --help         Prints help information
    -V, --version      Prints version information
    -w, --watch        continuously update on change
 
 OPTIONS:
-   -h, --html <html>    output html documentation
-   -j, --json <FILE>    print result as JSON
+   -j, --json <FILE>            print result as JSON
+   -l, --location <location>    location to save HTML
+   -t, --template <template>    .hbs template to use for generation of documentation
 
 ARGS:
    <INPUT>    Sets the input file to use

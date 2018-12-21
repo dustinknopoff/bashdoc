@@ -1,7 +1,7 @@
 about: 'Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.'
 author: "Dustin Knopoff <dustinknopoff@gmail.com>"
 name: bashdoc
-version: "0.4.6"
+version: "0.4.7"
 args:
   - color:
       help: "toggles color"
@@ -30,7 +30,6 @@ args:
       long: location
       help: location to save HTML
       takes_value: true
-      required: true
   - template:
       short: t
       long: template

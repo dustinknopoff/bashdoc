@@ -61,7 +61,8 @@
 //!## Usage
 //!
 //!```bash
-//!bashdoc 1.0
+//!bashdoc 0.4.7
+//!Dustin Knopoff <dustinknopoff@gmail.com>
 //!Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
 //!formatting.
 //!
@@ -71,13 +72,14 @@
 //!FLAGS:
 //!    -c, --color        toggles color
 //!    -d, --directory    pass a glob pattern to run on.
-//!        --help         Prints help information
+//!    -h, --help         Prints help information
 //!    -V, --version      Prints version information
 //!    -w, --watch        continuously update on change
 //!
 //!OPTIONS:
-//!    -h, --html <html>    output html documentation
-//!    -j, --json <FILE>    print result as JSON
+//!    -j, --json <FILE>            print result as JSON
+//!    -l, --location <location>    location to save HTML
+//!    -t, --template <template>    .hbs template to use for generation of documentation
 //!
 //!ARGS:
 //!    <INPUT>    Sets the input file to use
@@ -91,11 +93,8 @@
 //!
 //! See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGELOG.md) for updates
 mod docs;
-use crate::docs::*;
-use clap::{load_yaml, App, ArgMatches};
-use dirs::home_dir;
-use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{process::exit, sync::mpsc::channel, time::Duration};
+use crate::docs::runners::*;
+use clap::{load_yaml, App};
 
 fn main() {
     let yaml = load_yaml!("../cli.yml");
@@ -104,78 +103,5 @@ fn main() {
         watcher(&matches);
     } else {
         generate(&matches);
-    }
-}
-
-fn generate<'a>(matches: &'a ArgMatches<'a>) {
-    let delims = match matches.subcommand() {
-        ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
-        _ => Delimiters::get_delims(),
-    };
-    let all_em = if matches.is_present("directory") {
-        start(
-            matches.value_of("INPUT").expect("directory glob not found"),
-            true,
-            delims,
-        )
-    } else {
-        start(
-            matches.value_of("INPUT").expect("no file found."),
-            false,
-            delims,
-        )
-    };
-    if matches.is_present("json") {
-        write_json(&all_em, matches.value_of("json").unwrap());
-    } else if matches.is_present("location") {
-        to_html(
-            &all_em,
-            matches.value_of("location"),
-            matches.value_of("template"),
-        );
-    } else {
-        for doc in &all_em {
-            if matches.is_present("color") {
-                printer(doc, true);
-            } else {
-                printer(doc, false);
-            }
-        }
-    }
-}
-
-fn watcher<'a>(matches: &'a ArgMatches<'a>) {
-    generate(matches);
-    let (tx, rx) = channel();
-    let mut watcher: RecommendedWatcher = match Watcher::new(tx, Duration::from_secs(2)) {
-        Ok(d) => d,
-        Err(_) => {
-            println!("Provided path is invalid");
-            exit(1);
-        }
-    };
-    let path: String = if cfg!(windows) {
-        String::from(matches.value_of("INPUT").unwrap())
-    } else {
-        matches
-            .value_of("INPUT")
-            .unwrap()
-            .replace("~", home_dir().unwrap().to_str().unwrap())
-    };
-    watcher.watch(&path, RecursiveMode::Recursive).unwrap();
-    println!("Watching for changes in {}...", path);
-    loop {
-        match rx.recv() {
-            Ok(event) => {
-                generate(&matches);
-                if let DebouncedEvent::Write(e) = event {
-                    println!(
-                        "Bashdoc updated to match changes to {}.",
-                        e.as_path().file_name().unwrap().to_str().unwrap()
-                    );
-                }
-            }
-            Err(e) => println!("watch error: {:?}", e),
-        }
     }
 }
