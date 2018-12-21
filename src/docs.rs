@@ -13,10 +13,13 @@ use nom_locate::{position, LocatedSpan};
 use serde_derive::*;
 use std::{collections::HashMap, env, fs, fs::File, path::Path, process::exit};
 
+/// "Main" of bashdoc
 pub mod runners {
     use super::*;
     use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
     use std::{sync::mpsc::channel, time::Duration};
+
+    /// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
     pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
         let delims = match matches.subcommand() {
             ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
@@ -54,6 +57,7 @@ pub mod runners {
         }
     }
 
+    /// Given a request to watch files, Call `generate` on file write.
     pub fn watcher<'a>(matches: &'a ArgMatches<'a>) {
         generate(matches);
         let (tx, rx) = channel();
@@ -91,6 +95,7 @@ pub mod runners {
     }
 }
 
+/// Functions and declarations for general Key,Value Pair
 mod kv {
     use super::*;
     /// Represents a simple Key, Value pair
@@ -140,6 +145,7 @@ mod kv {
     }
 }
 
+/// Functions and declarations for Docs and parsing from strings
 mod doc {
     use super::*;
     /// Represents a docstring
@@ -222,6 +228,7 @@ mod doc {
     }
 }
 
+/// Functions and declarations for DocFile's and parsing
 mod docfile {
     use super::*;
     use rayon::prelude::*;
@@ -242,6 +249,7 @@ mod docfile {
     }
 
     pub type Span<'a> = LocatedSpan<CompleteStr<'a>>;
+    /// Represents the string extracted from a file, including it's location in the file found.
     pub struct Extracted<'a> {
         pub position: Span<'a>,
         pub content: String,
@@ -348,6 +356,7 @@ mod docfile {
     }
 }
 
+/// Functions for presenting bashdocs to STDOUT, as JSON, or HTML
 mod outputs {
     use super::*;
     use colored::*;
@@ -484,6 +493,7 @@ mod outputs {
     }
 }
 
+/// Functions and declarations for generating/overriding delimiters
 mod delims {
     use super::*;
     use std::io::prelude::*;
