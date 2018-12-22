@@ -140,7 +140,7 @@ mod kv {
 mod doc {
     use super::*;
     /// Represents a docstring
-    #[derive(Debug, Serialize, Deserialize, Clone)]
+    #[derive(Debug, Serialize, Deserialize, Clone, Default)]
     pub struct Doc {
         pub short_description: String,
         pub long_description: String,
@@ -218,10 +218,7 @@ mod doc {
             let parsed = parse_doc(&vector.content, delims);
             let mut result = match parsed {
                 Ok(e) => e.1,
-                Err(_) => {
-                    println!("{} did not contain any docstrings.", fname);
-                    exit(1);
-                }
+                Err(_) => Default::default(),
             };
             result.position = vector.position.line + 1;
             Ok(result)
@@ -327,11 +324,12 @@ mod docfile {
     /// Given a file path and delimiters, generate a DocFile for all files requested.
     pub fn start(p: &Path, delims: Delimiters) -> Vec<DocFile> {
         if p.is_dir() || p.to_str().unwrap().contains('*') {
-            let pth = if cfg!(windows) {
-                p.to_path_buf()
-            } else {
+            let pth = if p.to_str().unwrap().contains('~') {
                 home_dir().unwrap().join(p.strip_prefix("~").unwrap())
+            } else {
+                p.to_path_buf()
             };
+            println!("{}", pth.display());
             let files: Vec<_> = glob(pth.to_str().unwrap())
                 .unwrap()
                 .filter_map(|x| x.ok())
