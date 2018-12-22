@@ -212,7 +212,6 @@ mod doc {
         pub fn make_doc(
             vector: &Extracted,
             delims: Delimiters,
-            fname: &str,
         ) -> Result<Doc, nom::ErrorKind> {
             // println!("{:#?}", vector);
             let parsed = parse_doc(&vector.content, delims);
@@ -315,7 +314,7 @@ mod docfile {
         let collected: Vec<Doc> = docs
             .par_iter()
             .filter(|x| !x.content.is_empty())
-            .map(|x| Doc::make_doc(x, delims, &all_docs.filename).unwrap())
+            .map(|x| Doc::make_doc(x, delims).unwrap())
             .collect();
         all_docs.thedocs = collected;
         all_docs
@@ -544,27 +543,39 @@ mod delims {
         /// Read/Write contents of `$BASHDOC_CONFIG_PATH` for use as Delimiters.
         pub fn get_delims() -> Self {
             let mut contents = String::new();
-            match env::var_os("BASHDOC_CONFIG_PATH") {
-                Some(val) => {
-                    let mut config = File::open(Path::new(&val)).expect("Invalid path");
-                    config
-                        .read_to_string(&mut contents)
-                        .expect("could not read from file.");
-                    let mut to_convert = String::new();
-                    to_convert.push_str(&contents);
-                    let as_static: &'static str = Box::leak(to_convert.into_boxed_str());
-                    let sorted: Delimiters = toml::from_str(&as_static).unwrap();
-                    sorted
-                }
-                None => {
-                    let delimiters = Delimiters::default();
-                    let content = toml::to_string_pretty(&delimiters)
-                        .expect("Could not be converted to TOML");
-                    let mut path = home_dir().unwrap();
-                    path.push(".bashdocrc");
-                    fs::write(path.to_str().unwrap(), content).unwrap();
-                    env::set_var("BASHDOC_CONFIG_PATH", path);
-                    delimiters
+            if env::current_dir().unwrap().join(".bashdocrc").is_file() {
+                let mut config = File::open(Path::new(&env::current_dir().unwrap().join(".bashdocrc"))).expect("Invalid path");
+                config
+                    .read_to_string(&mut contents)
+                    .expect("could not read from file.");
+                let mut to_convert = String::new();
+                to_convert.push_str(&contents);
+                let as_static: &'static str = Box::leak(to_convert.into_boxed_str());
+                let sorted: Delimiters = toml::from_str(&as_static).unwrap();
+                sorted
+            } else {
+                match env::var_os("BASHDOC_CONFIG_PATH") {
+                    Some(val) => {
+                        let mut config = File::open(Path::new(&val)).expect("Invalid path");
+                        config
+                            .read_to_string(&mut contents)
+                            .expect("could not read from file.");
+                        let mut to_convert = String::new();
+                        to_convert.push_str(&contents);
+                        let as_static: &'static str = Box::leak(to_convert.into_boxed_str());
+                        let sorted: Delimiters = toml::from_str(&as_static).unwrap();
+                        sorted
+                    }
+                    None => {
+                        let delimiters = Delimiters::default();
+                        let content = toml::to_string_pretty(&delimiters)
+                            .expect("Could not be converted to TOML");
+                        let mut path = home_dir().unwrap();
+                        path.push(".bashdocrc");
+                        fs::write(path.to_str().unwrap(), content).unwrap();
+                        env::set_var("BASHDOC_CONFIG_PATH", path);
+                        delimiters
+                    }
                 }
             }
         }

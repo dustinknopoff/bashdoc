@@ -65,31 +65,30 @@
 //!## Usage
 //!
 //!```bash
-//!bashdoc 0.4.7
-//!Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on
-//!formatting.
+//!bashdoc 0.4.10
+//!Dustin Knopoff <dustinknopoff@gmail.com>
+//!Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.
 //!
 //!USAGE:
-//!    bashdoc [FLAGS] [OPTIONS] <INPUT> [SUBCOMMAND]
+//!bashdoc [FLAGS] [OPTIONS] <INPUT> [SUBCOMMAND]
 //!
 //!FLAGS:
-//!    -c, --color        toggles color
-//!    -d, --directory    pass a glob pattern to run on.
-//!    -h, --help         Prints help information
-//!    -V, --version      Prints version information
-//!    -w, --watch        continuously update on change
+//!-c, --color      toggles color
+//!-h, --help       Prints help information
+//!-V, --version    Prints version information
+//!-w, --watch      continuously update on change
 //!
 //!OPTIONS:
-//!    -j, --json <FILE>            print result as JSON
-//!    -l, --location <location>    location to save HTML
-//!    -t, --template <template>    .hbs template to use for generation of documentation
+//!-j, --json <FILE>            print result as JSON
+//!-l, --location <location>    location to save HTML
+//!-t, --template <template>    .hbs template to use for generation of documentation
 //!
 //!ARGS:
-//!    <INPUT>    Sets the input file to use
+//!<INPUT>    Sets the input file or glob pattern to use
 //!
 //!SUBCOMMANDS:
-//!    help        Prints this message or the help of the given subcommand(s)
-//!    override    override the delimiters
+//!help        Prints this message or the help of the given subcommand(s)
+//!override    override the delimiters
 //!```
 //!
 //! See the [examples](https://github.com/dustinknopoff/bashdoc/tree/master/example) folder for more.
@@ -106,6 +105,7 @@
 //!- v0.4.8 - Clearer README, link to docs.rs documentation
 //!- v0.4.9 - Improved error path handling
 //!- v0.4.10 - Support for windows file paths again
+//! - v0.4.11 - support for overriding global `.bashdocrc` within a directory.
 mod docs;
 use crate::docs::runners::*;
 use clap::{load_yaml, App};
