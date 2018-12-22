@@ -105,6 +105,7 @@
 //!- v0.4.7 - Fix required location for all inputs and not exclusive to `--location`
 //!- v0.4.8 - Clearer README, link to docs.rs documentation
 //!- v0.4.9 - Improved error path handling
+//!- v0.4.10 - Support for windows file paths again
 mod docs;
 use crate::docs::runners::*;
 use clap::{load_yaml, App};
