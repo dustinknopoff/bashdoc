@@ -1,6 +1,6 @@
 [package]
 name = "bashdoc"
-version = "0.4.8"
+version = "0.4.9"
 authors = ["Dustin Knopoff <dustinknopoff@gmail.com>"]
 description = """
 A tool for generating documentation/help menu for user defined bash functions.

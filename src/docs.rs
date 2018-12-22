@@ -25,19 +25,10 @@ pub mod runners {
             ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
             _ => Delimiters::get_delims(),
         };
-        let all_em = if matches.is_present("directory") {
-            start(
-                matches.value_of("INPUT").expect("directory glob not found"),
-                true,
-                delims,
-            )
-        } else {
-            start(
-                matches.value_of("INPUT").expect("no file found."),
-                false,
-                delims,
-            )
-        };
+        let all_em = start(
+            &Path::new(matches.value_of("INPUT").expect("directory glob not found")),
+            delims,
+        );
         if matches.is_present("json") {
             write_json(&all_em, matches.value_of("json").unwrap());
         } else if matches.is_present("location") {
@@ -218,12 +209,22 @@ mod doc {
     impl Doc {
         /// Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
-        pub fn make_doc(vector: &Extracted, delims: Delimiters) -> Doc {
+        pub fn make_doc(
+            vector: &Extracted,
+            delims: Delimiters,
+            fname: &str,
+        ) -> Result<Doc, nom::ErrorKind> {
             // println!("{:#?}", vector);
             let parsed = parse_doc(&vector.content, delims);
-            let mut result = parsed.expect("Parsing error.").1;
+            let mut result = match parsed {
+                Ok(e) => e.1,
+                Err(_) => {
+                    println!("{} did not contain any docstrings.", fname);
+                    exit(1);
+                }
+            };
             result.position = vector.position.line + 1;
-            result
+            Ok(result)
         }
     }
 }
@@ -284,7 +285,13 @@ mod docfile {
     ///
     /// A final `Vec` of the collected comment strings is returned.
     pub fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>> {
-        let mut f = File::open(&p).expect("file not found.");
+        let mut f = match File::open(&p) {
+            Ok(m) => m,
+            Err(_) => {
+                println!("Provided path is invalid");
+                exit(1);
+            }
+        };
         let mut buffer = String::new();
         f.read_to_string(&mut buffer).unwrap();
         let used = Box::leak(buffer.into_boxed_str());
@@ -303,53 +310,39 @@ mod docfile {
     /// Given a `Vec<str>` make a `DocFile`
     pub fn generate_doc_file(
         docs: &[Extracted<'static>],
-        fname: String,
+        fname: &Path,
         delims: Delimiters,
     ) -> DocFile {
         let mut all_docs: DocFile = Default::default();
-        all_docs.filename = fname;
+        all_docs.filename = String::from(fname.file_stem().unwrap().to_str().unwrap());
         let collected: Vec<Doc> = docs
             .par_iter()
             .filter(|x| !x.content.is_empty())
-            .map(|x| Doc::make_doc(x, delims))
+            .map(|x| Doc::make_doc(x, delims, &all_docs.filename).unwrap())
             .collect();
         all_docs.thedocs = collected;
         all_docs
     }
 
     /// Given a file path and delimiters, generate a DocFile for all files requested.
-    pub fn start(p: &str, is_directory: bool, delims: Delimiters) -> Vec<DocFile> {
-        let dir = if cfg!(windows) {
-            String::from(p)
-        } else {
-            p.replace("~", home_dir().unwrap().to_str().unwrap())
-        };
-        if is_directory {
-            let files: Vec<_> = glob(&dir).unwrap().filter_map(|x| x.ok()).collect();
+    pub fn start(p: &Path, delims: Delimiters) -> Vec<DocFile> {
+        if p.is_dir() || p.to_str().unwrap().contains("*") {
+            let pth = home_dir().unwrap().join(p.strip_prefix("~").unwrap());
+            let files: Vec<_> = glob(pth.to_str().unwrap())
+                .unwrap()
+                .filter_map(|x| x.ok())
+                .collect();
             let every_doc: Vec<DocFile> = files
                 .par_iter()
                 .map(|entry| {
                     let docs = get_strings_from_file(&entry, delims);
-                    generate_doc_file(
-                        &docs,
-                        entry.file_name().unwrap().to_str().unwrap().to_string(),
-                        delims,
-                    )
+                    generate_doc_file(&docs, &entry, delims)
                 })
                 .collect();
             every_doc
         } else {
-            let docs = get_strings_from_file(&Path::new(&p), delims);
-            let all_docs = generate_doc_file(
-                &docs,
-                Path::new(&dir)
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .to_string(),
-                delims,
-            );
+            let docs = get_strings_from_file(&p.canonicalize().unwrap(), delims);
+            let all_docs = generate_doc_file(&docs, &p, delims);
             let result = vec![all_docs];
             result
         }

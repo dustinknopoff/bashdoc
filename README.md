@@ -106,5 +106,6 @@ See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGEL
 - v.0.4.6 - Improved Error handling, `--html` argument removed replaced with `--location`, `--template` argument added for supplying custom `.hbs`
 - v0.4.7 - Fix required location for all inputs and not exclusive to `--location`
 - v0.4.8 - Clearer README, link to docs.rs documentation
+- v0.4.9 - Improved error path handling
 
 License: MIT

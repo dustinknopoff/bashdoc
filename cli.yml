@@ -1,20 +1,16 @@
 about: 'Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.'
 author: "Dustin Knopoff <dustinknopoff@gmail.com>"
 name: bashdoc
-version: "0.4.8"
+version: "0.4.9"
 args:
   - color:
       help: "toggles color"
       long: color
       short: c
   - INPUT:
-      help: "Sets the input file to use"
+      help: "Sets the input file or glob pattern to use"
       index: 1
       required: true
-  - directory:
-      help: "pass a glob pattern to run on."
-      long: directory
-      short: d
   - json:
       help: "print result as JSON"
       long: json
