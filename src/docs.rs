@@ -326,7 +326,7 @@ mod docfile {
 
     /// Given a file path and delimiters, generate a DocFile for all files requested.
     pub fn start(p: &Path, delims: Delimiters) -> Vec<DocFile> {
-        if p.is_dir() || p.to_str().unwrap().contains("*") {
+        if p.is_dir() || p.to_str().unwrap().contains('*') {
             let pth = if cfg!(windows) {
                 p.to_path_buf()
             } else {
