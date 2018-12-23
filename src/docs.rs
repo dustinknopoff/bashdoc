@@ -603,7 +603,7 @@ mod tests {
 
         #[test]
         fn is_as_kv_white() {
-            let conv = as_kv_whitespace("CTRL-O to open with `open` command,");
+            let conv = as_kv("CTRL-O to open with `open` command,");
             assert_eq!(
                 KV {
                     key: String::from("CTRL-O"),
