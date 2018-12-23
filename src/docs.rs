@@ -209,10 +209,7 @@ mod doc {
     impl Doc {
         /// Build a `Doc` from an array of strings
         /// Parse `Doc` fields.
-        pub fn make_doc(
-            vector: &Extracted,
-            delims: Delimiters,
-        ) -> Result<Doc, nom::ErrorKind> {
+        pub fn make_doc(vector: &Extracted, delims: Delimiters) -> Result<Doc, nom::ErrorKind> {
             // println!("{:#?}", vector);
             let parsed = parse_doc(&vector.content, delims);
             let mut result = match parsed {
@@ -514,28 +511,20 @@ mod delims {
             }
         }
     }
-
     impl<'a> Delimiters<'a> {
         /// Override default delimiters with passed in values
         pub fn override_delims(overrides: &'a ArgMatches<'a>) -> Self {
             let mut result: Delimiters = Delimiters::default();
-            if overrides.is_present("start") {
-                result.start = overrides.value_of("start").unwrap();
-            }
-            if overrides.is_present("end") {
-                result.end = overrides.value_of("end").unwrap();
-            }
-            if overrides.is_present("descriptor") {
-                result.opt = overrides.value_of("descriptor").unwrap();
-            }
-            if overrides.is_present("params") {
-                result.params = overrides.value_of("params").unwrap();
-            }
-            if overrides.is_present("returns") {
-                result.ret = overrides.value_of("returns").unwrap();
-            }
-            if overrides.is_present("comment") {
-                result.comm = overrides.value_of("comment").unwrap();
+            for key in overrides.args.keys() {
+                match key.as_ref() {
+                    "start" => result.start = overrides.value_of(key).unwrap(),
+                    "end" => result.end = overrides.value_of(key).unwrap(),
+                    "descriptor" => result.opt = overrides.value_of(key).unwrap(),
+                    "params" => result.params = overrides.value_of(key).unwrap(),
+                    "returns" => result.ret = overrides.value_of(key).unwrap(),
+                    "comment" => result.comm = overrides.value_of(key).unwrap(),
+                    _ => {}
+                }
             }
             result
         }
@@ -544,7 +533,9 @@ mod delims {
         pub fn get_delims() -> Self {
             let mut contents = String::new();
             if env::current_dir().unwrap().join(".bashdocrc").is_file() {
-                let mut config = File::open(Path::new(&env::current_dir().unwrap().join(".bashdocrc"))).expect("Invalid path");
+                let mut config =
+                    File::open(Path::new(&env::current_dir().unwrap().join(".bashdocrc")))
+                        .expect("Invalid path");
                 config
                     .read_to_string(&mut contents)
                     .expect("could not read from file.");
