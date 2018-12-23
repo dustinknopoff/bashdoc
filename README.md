@@ -68,7 +68,6 @@ cargo install --path . --force
 
 ```bash
 bashdoc 0.4.10
-Dustin Knopoff <dustinknopoff@gmail.com>
 Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.
 
 USAGE:
