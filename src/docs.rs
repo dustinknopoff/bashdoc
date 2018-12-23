@@ -118,16 +118,11 @@ mod kv {
     /// as_kv(example) // returns [KV {key: "filename", value: "don't test me"}]
     /// ```
     pub fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
-        let parts: Vec<_> = input.split(": ").collect();
-        let result = KV {
-            key: parts[0].trim().to_string(),
-            value: parts[1..].join("").to_string(),
+        let parts: Vec<_> = if input.contains(":") {
+            input.split(": ").collect()
+        } else {
+            input.split_whitespace().collect()
         };
-        Ok(result)
-    }
-
-    pub fn as_kv_whitespace(input: &str) -> Result<KV, nom::ErrorKind> {
-        let parts: Vec<_> = input.split_whitespace().collect();
         let result = KV {
             key: parts[0].trim().to_string(),
             value: parts[1..].join(" ").to_string(),
@@ -179,7 +174,7 @@ mod doc {
                         take_until_and_consume!(delims.opt),
                         take_until_and_consume!("\n")
                     ),
-                    as_kv_whitespace
+                    as_kv
                 ))))
                 >> par: opt!(many0!(complete!(map_res!(
                     preceded!(
