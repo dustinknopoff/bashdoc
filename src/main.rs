@@ -66,7 +66,6 @@
 //!
 //!```bash
 //!bashdoc 0.4.10
-//!Dustin Knopoff <dustinknopoff@gmail.com>
 //!Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.
 //!
 //!USAGE:
@@ -106,6 +105,7 @@
 //!- v0.4.9 - Improved error path handling
 //!- v0.4.10 - Support for windows file paths again
 //! - v0.4.11 - support for overriding global `.bashdocrc` within a directory.
+//! - v0.4.12 - descriptors can be split on ':' or whitespace
 mod docs;
 use crate::docs::runners::*;
 use clap::{load_yaml, App};

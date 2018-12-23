@@ -107,5 +107,6 @@ See the [changelog](https://github.com/dustinknopoff/bashdoc/blob/master/CHANGEL
 - v0.4.9 - Improved error path handling
 - v0.4.10 - Support for windows file paths again
 - v0.4.11 - support for overriding global `.bashdocrc` within a directory.
+- v0.4.12 - descriptors can be split on ':' or whitespace
 
 License: MIT

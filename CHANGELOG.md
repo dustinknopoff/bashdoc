@@ -6,24 +6,6 @@
 
 - **cli.yml:** Can provide a custom template for html documentation ([05936821](https://github.com/dustinknopoff/bashdoc/commit/059368217d8f155662a1ee3e156d0e0e373c2c03), breaks [#](https://github.com/dustinknopoff/bashdoc/issues/))
 
-#### Features
-
-- **Delimiters:** override global .bashdocrc within a directory ([45517f6d](https://github.com/dustinknopoff/bashdoc/commit/45517f6d7b2be21d3510c4c008cc63ea99653c12))
-- **Extracted:** Parsing of bashdocs from text now includes the line number of the function extract ([0ce89d6e](https://github.com/dustinknopoff/bashdoc/commit/0ce89d6e65efd4852b79aecf89a37d746922f4bf))
-- **Windows:** support for windows filepaths ([fec2de62](https://github.com/dustinknopoff/bashdoc/commit/fec2de6235b82c18ebaf839aa0e736196850ab40))
-- **cli.yml:** Can provide a custom template for html documentation ([05936821](https://github.com/dustinknopoff/bashdoc/commit/059368217d8f155662a1ee3e156d0e0e373c2c03), breaks [#](https://github.com/dustinknopoff/bashdoc/issues/))
-- **docs.rs:** Upgrade to 2018 edition, move to nom for parsing ([e7b0541b](https://github.com/dustinknopoff/bashdoc/commit/e7b0541b5fe26db23198e15100916f0d59fbeeae))
-- **output HTML:**
-  - Basic example of outputting html documentation of a bashdoc call ([0155a3e8](https://github.com/dustinknopoff/bashdoc/commit/0155a3e84058b2378b8c0dfc7b37e62c2a3bda7e))
-  - Extremely bare example of creating html documentation from a bashdoc call ([030645ef](https://github.com/dustinknopoff/bashdoc/commit/030645ef8fc1c2d66e4095c14146c6ac9f6ec8d7))
-- **script.js:**
-  - Highlight clicked on function ([5bab275c](https://github.com/dustinknopoff/bashdoc/commit/5bab275cf8fb291934122d7bc9520733530a775b))
-  - Highlight clicked on function ([b8d25409](https://github.com/dustinknopoff/bashdoc/commit/b8d25409d328ad1d282ba45c58b3a19f0630166b))
-
-#### Performance
-
-- **generate_doc_file:** Parallelize Doc generation ([984e546e](https://github.com/dustinknopoff/bashdoc/commit/984e546e19aed5aec4ad91d6cf4b506b03c31d42))
-
 #### Bug Fixes
 
 - **0.4.0:** ([31d2454b](https://github.com/dustinknopoff/bashdoc/commit/31d2454bcb44a074c2b22e1c58ff38a64f78a830))
@@ -35,6 +17,7 @@
   - Metadata for publishing added ([8fda35d6](https://github.com/dustinknopoff/bashdoc/commit/8fda35d68637380499b8aaf515570bc7e41cafc3))
   - Remove email ([29d67053](https://github.com/dustinknopoff/bashdoc/commit/29d67053bb62e31458a9be9635b6fdb078f52639))
 - **Clippy:** Allow Cyclomatic Complexity on nom parser ([6ce68ec9](https://github.com/dustinknopoff/bashdoc/commit/6ce68ec90e0525977b716ce579a24d64b491ca33))
+- **Delimiters:** descriptors can split on things other than whitespace ([15c704b9](https://github.com/dustinknopoff/bashdoc/commit/15c704b97754314f1577a1d7f1630bd2bfa2174e))
 - **Docs:** Better md formatting ([8d4df95b](https://github.com/dustinknopoff/bashdoc/commit/8d4df95b3759f9ec9472c7322f3229f297fae22f))
 - **README:**
   - include cargo install instructions ([5c504667](https://github.com/dustinknopoff/bashdoc/commit/5c5046676c2842a7dbcaedc80f47c1b1a365039c))
@@ -57,3 +40,21 @@
 - **html:** remove example html to stop inflation of html in repo ([e9965c58](https://github.com/dustinknopoff/bashdoc/commit/e9965c58df218db21b6fe04d05748a10d132d334))
 - **screenshot:** ([87d31b24](https://github.com/dustinknopoff/bashdoc/commit/87d31b2469614f92ca1a42fa81d08d590692a610))
 - **static:** remove unnecessary CSS files ([38b6f064](https://github.com/dustinknopoff/bashdoc/commit/38b6f06476e8ecaba05c497cda3022bec6fa8d5d))
+
+#### Performance
+
+- **generate_doc_file:** Parallelize Doc generation ([984e546e](https://github.com/dustinknopoff/bashdoc/commit/984e546e19aed5aec4ad91d6cf4b506b03c31d42))
+
+#### Features
+
+- **Delimiters:** override global .bashdocrc within a directory ([45517f6d](https://github.com/dustinknopoff/bashdoc/commit/45517f6d7b2be21d3510c4c008cc63ea99653c12))
+- **Extracted:** Parsing of bashdocs from text now includes the line number of the function extract ([0ce89d6e](https://github.com/dustinknopoff/bashdoc/commit/0ce89d6e65efd4852b79aecf89a37d746922f4bf))
+- **Windows:** support for windows filepaths ([fec2de62](https://github.com/dustinknopoff/bashdoc/commit/fec2de6235b82c18ebaf839aa0e736196850ab40))
+- **cli.yml:** Can provide a custom template for html documentation ([05936821](https://github.com/dustinknopoff/bashdoc/commit/059368217d8f155662a1ee3e156d0e0e373c2c03), breaks [#](https://github.com/dustinknopoff/bashdoc/issues/))
+- **docs.rs:** Upgrade to 2018 edition, move to nom for parsing ([e7b0541b](https://github.com/dustinknopoff/bashdoc/commit/e7b0541b5fe26db23198e15100916f0d59fbeeae))
+- **output HTML:**
+  - Basic example of outputting html documentation of a bashdoc call ([0155a3e8](https://github.com/dustinknopoff/bashdoc/commit/0155a3e84058b2378b8c0dfc7b37e62c2a3bda7e))
+  - Extremely bare example of creating html documentation from a bashdoc call ([030645ef](https://github.com/dustinknopoff/bashdoc/commit/030645ef8fc1c2d66e4095c14146c6ac9f6ec8d7))
+- **script.js:**
+  - Highlight clicked on function ([5bab275c](https://github.com/dustinknopoff/bashdoc/commit/5bab275cf8fb291934122d7bc9520733530a775b))
+  - Highlight clicked on function ([b8d25409](https://github.com/dustinknopoff/bashdoc/commit/b8d25409d328ad1d282ba45c58b3a19f0630166b))
