@@ -10,7 +10,7 @@ use handlebars::{to_json, Handlebars};
 use nom::types::CompleteStr;
 use nom::*;
 use nom_locate::{position, LocatedSpan};
-use serde_derive::*;
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, env, fs, fs::File, path::Path, process::exit};
 
 /// "Main" of bashdoc
