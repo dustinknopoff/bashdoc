@@ -11,80 +11,13 @@ use nom::types::CompleteStr;
 use nom::*;
 use nom_locate::{position, LocatedSpan};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, fs, fs::File, path::Path, process::exit};
-
-/// "Main" of bashdoc
-pub mod runners {
-    use super::*;
-    use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
-    use std::{sync::mpsc::channel, time::Duration};
-
-    /// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
-    pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
-        let delims = match matches.subcommand() {
-            ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
-            _ => Delimiters::get_delims(),
-        };
-        let all_em = start(
-            &Path::new(matches.value_of("INPUT").expect("directory glob not found")),
-            delims,
-        );
-        if matches.is_present("json") {
-            write_json(&all_em, matches.value_of("json").unwrap());
-        } else if matches.is_present("location") {
-            to_html(
-                &all_em,
-                matches.value_of("location"),
-                matches.value_of("template"),
-            );
-        } else {
-            for doc in &all_em {
-                if matches.is_present("color") {
-                    printer(doc, true);
-                } else {
-                    printer(doc, false);
-                }
-            }
-        }
-    }
-
-    /// Given a request to watch files, Call `generate` on file write.
-    pub fn watcher<'a>(matches: &'a ArgMatches<'a>) {
-        generate(matches);
-        let (tx, rx) = channel();
-        let mut watcher: RecommendedWatcher = match Watcher::new(tx, Duration::from_secs(2)) {
-            Ok(d) => d,
-            Err(_) => {
-                println!("Provided path is invalid");
-                exit(1);
-            }
-        };
-        let path: String = if cfg!(windows) {
-            String::from(matches.value_of("INPUT").unwrap())
-        } else {
-            matches
-                .value_of("INPUT")
-                .unwrap()
-                .replace("~", home_dir().unwrap().to_str().unwrap())
-        };
-        watcher.watch(&path, RecursiveMode::Recursive).unwrap();
-        println!("Watching for changes in {}...", path);
-        loop {
-            match rx.recv() {
-                Ok(event) => {
-                    generate(&matches);
-                    if let DebouncedEvent::Write(e) = event {
-                        println!(
-                            "Bashdoc updated to match changes to {}.",
-                            e.as_path().file_name().unwrap().to_str().unwrap()
-                        );
-                    }
-                }
-                Err(e) => println!("watch error: {:?}", e),
-            }
-        }
-    }
-}
+use std::{
+    collections::HashMap,
+    env, fs,
+    fs::File,
+    path::{Path, PathBuf},
+    process::exit,
+};
 
 /// Functions and declarations for general Key,Value Pair
 mod kv {
@@ -272,27 +205,18 @@ mod docfile {
     /// and adds every line to a `Vec` until the end delimiter.
     ///
     /// A final `Vec` of the collected comment strings is returned.
-    pub fn get_strings_from_file<'a>(p: &Path, delims: Delimiters) -> Vec<Extracted<'a>> {
-        let mut f = match File::open(&p) {
-            Ok(m) => m,
-            Err(_) => {
-                println!("Provided path is invalid");
-                exit(1);
-            }
-        };
-        let mut buffer = String::new();
-        f.read_to_string(&mut buffer).unwrap();
-        let used = Box::leak(buffer.into_boxed_str());
-        // println!("{:#?}", used);
-        let result = parse_strings_from_file(Span::new(CompleteStr(used)), delims);
-        // println!("{:#?}", result);
-        match result {
-            Ok(r) => r.1,
-            Err(_) => {
-                println!("Error parsing {}", p.display());
-                exit(1);
-            }
-        }
+    pub fn get_strings_from_file<'a>(
+        p: &Path,
+        delims: Delimiters,
+    ) -> Result<Vec<Extracted<'a>>, String> {
+        let mut file = File::open(p).map_err(|e| e.to_string())?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .map_err(|e| e.to_string())?;
+        let used = Box::leak(contents.into_boxed_str());
+        let x = parse_strings_from_file(Span::new(CompleteStr(used)), delims)
+            .map_err(|err| err.to_string())?;
+        Ok(x.1)
     }
 
     /// Given a `Vec<str>` make a `DocFile`
@@ -312,33 +236,49 @@ mod docfile {
         all_docs
     }
 
-    /// Given a file path and delimiters, generate a DocFile for all files requested.
-    pub fn start(p: &Path, delims: Delimiters) -> Vec<DocFile> {
-        if p.is_dir() || p.to_str().unwrap().contains('*') {
-            let pth = if p.to_str().unwrap().contains('~') {
-                home_dir().unwrap().join(p.strip_prefix("~").unwrap())
-            } else {
-                p.to_path_buf()
-            };
-            println!("{}", pth.display());
-            let files: Vec<_> = glob(pth.to_str().unwrap())
+    fn extract_all_paths(p: &str) -> Result<Vec<PathBuf>, String> {
+        let as_path = Path::new(p);
+        let pth = if p.contains('~') {
+            home_dir().expect("Could not find home directory.").join(
+                as_path
+                    .strip_prefix("~")
+                    .expect("Could not strip shortcut."),
+            )
+        } else {
+            match as_path.canonicalize() {
+                Ok(o) => o,
+                Err(e) => {
+                    println!("{}", e.to_string());
+                    exit(1);
+                }
+            }
+        };
+        let files: Vec<_> = if p.contains('*') {
+            glob(pth.to_str().unwrap())
                 .unwrap()
                 .filter_map(|x| x.ok())
-                .collect();
-            let every_doc: Vec<DocFile> = files
-                .par_iter()
-                .map(|entry| {
-                    let docs = get_strings_from_file(&entry, delims);
-                    generate_doc_file(&docs, &entry, delims)
-                })
-                .collect();
-            every_doc
+                .collect()
         } else {
-            let docs = get_strings_from_file(&p.canonicalize().unwrap(), delims);
-            let all_docs = generate_doc_file(&docs, &p, delims);
-            let result = vec![all_docs];
-            result
-        }
+            vec![pth]
+        };
+        Ok(files)
+    }
+
+    /// Given a file path and delimiters, generate a DocFile for all files requested.
+    pub fn start(p: &str, delims: Delimiters) -> Result<Vec<DocFile>, String> {
+        let x: Vec<PathBuf> = extract_all_paths(p).map_err(|e| e.to_string())?;
+        Ok(x.par_iter()
+            .map(|entry| {
+                let docs = match get_strings_from_file(&entry, delims) {
+                    Ok(o) => o,
+                    Err(e) => {
+                        println!("{}", e.to_string());
+                        exit(1);
+                    }
+                };
+                generate_doc_file(&docs, &entry, delims)
+            })
+            .collect())
     }
 }
 
@@ -480,7 +420,7 @@ mod outputs {
 }
 
 /// Functions and declarations for generating/overriding delimiters
-mod delims {
+pub mod delims {
     use super::*;
     use std::io::prelude::*;
     /// Represents the necessary delimiters for a `bashdoc`

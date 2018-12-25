@@ -107,8 +107,10 @@
 //! - v0.4.11 - support for overriding global `.bashdocrc` within a directory.
 //! - v0.4.12 - descriptors can be split on ':' or whitespace
 mod docs;
-use crate::docs::runners::*;
-use clap::{load_yaml, App};
+use crate::docs::delims::override_delims;
+use clap::{load_yaml, App, ArgMatches};
+use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
+use std::{sync::mpsc::channel, time::Duration};
 
 fn main() {
     let yaml = load_yaml!("../cli.yml");
@@ -117,5 +119,72 @@ fn main() {
         watcher(&matches);
     } else {
         generate(&matches);
+    }
+}
+
+/// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
+pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
+    let delims = match matches.subcommand() {
+        ("override", Some(sub_m)) => override_delims(sub_m),
+        _ => Delimiters::get_delims(),
+    };
+    let all_em = start(
+        matches.value_of("INPUT").expect("directory glob not found"),
+        delims,
+    )
+    .unwrap();
+    if matches.is_present("json") {
+        write_json(&all_em, matches.value_of("json").unwrap());
+    } else if matches.is_present("location") {
+        to_html(
+            &all_em,
+            matches.value_of("location"),
+            matches.value_of("template"),
+        );
+    } else {
+        for doc in &all_em {
+            if matches.is_present("color") {
+                printer(doc, true);
+            } else {
+                printer(doc, false);
+            }
+        }
+    }
+}
+
+/// Given a request to watch files, Call `generate` on file write.
+pub fn watcher<'a>(matches: &'a ArgMatches<'a>) {
+    generate(matches);
+    let (tx, rx) = channel();
+    let mut watcher: RecommendedWatcher = match Watcher::new(tx, Duration::from_secs(2)) {
+        Ok(d) => d,
+        Err(_) => {
+            println!("Provided path is invalid");
+            exit(1);
+        }
+    };
+    let path: String = if cfg!(windows) {
+        String::from(matches.value_of("INPUT").unwrap())
+    } else {
+        matches
+            .value_of("INPUT")
+            .unwrap()
+            .replace("~", home_dir().unwrap().to_str().unwrap())
+    };
+    watcher.watch(&path, RecursiveMode::Recursive).unwrap();
+    println!("Watching for changes in {}...", path);
+    loop {
+        match rx.recv() {
+            Ok(event) => {
+                generate(&matches);
+                if let DebouncedEvent::Write(e) = event {
+                    println!(
+                        "Bashdoc updated to match changes to {}.",
+                        e.as_path().file_name().unwrap().to_str().unwrap()
+                    );
+                }
+            }
+            Err(e) => println!("watch error: {:?}", e),
+        }
     }
 }
