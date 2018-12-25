@@ -19,6 +19,80 @@ use std::{
     process::exit,
 };
 
+/// "Main" of bashdoc
+pub mod runners {
+    use super::*;
+    use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
+    use std::{sync::mpsc::channel, time::Duration};
+
+    /// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
+    pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
+        let delims = match matches.subcommand() {
+            ("override", Some(sub_m)) => Delimiters::override_delims(sub_m),
+            _ => Delimiters::get_delims(),
+        };
+        let all_em = start(
+            matches.value_of("INPUT").expect("directory glob not found"),
+            delims,
+        )
+        .unwrap();
+        if matches.is_present("json") {
+            write_json(&all_em, matches.value_of("json").unwrap());
+        } else if matches.is_present("location") {
+            to_html(
+                &all_em,
+                matches.value_of("location"),
+                matches.value_of("template"),
+            );
+        } else {
+            for doc in &all_em {
+                if matches.is_present("color") {
+                    printer(doc, true);
+                } else {
+                    printer(doc, false);
+                }
+            }
+        }
+    }
+
+    /// Given a request to watch files, Call `generate` on file write.
+    pub fn watcher<'a>(matches: &'a ArgMatches<'a>) {
+        generate(matches);
+        let (tx, rx) = channel();
+        let mut watcher: RecommendedWatcher = match Watcher::new(tx, Duration::from_secs(2)) {
+            Ok(d) => d,
+            Err(_) => {
+                println!("Provided path is invalid");
+                exit(1);
+            }
+        };
+        let path: String = if cfg!(windows) {
+            String::from(matches.value_of("INPUT").unwrap())
+        } else {
+            matches
+                .value_of("INPUT")
+                .unwrap()
+                .replace("~", home_dir().unwrap().to_str().unwrap())
+        };
+        watcher.watch(&path, RecursiveMode::Recursive).unwrap();
+        println!("Watching for changes in {}...", path);
+        loop {
+            match rx.recv() {
+                Ok(event) => {
+                    generate(&matches);
+                    if let DebouncedEvent::Write(e) = event {
+                        println!(
+                            "Bashdoc updated to match changes to {}.",
+                            e.as_path().file_name().unwrap().to_str().unwrap()
+                        );
+                    }
+                }
+                Err(e) => println!("watch error: {:?}", e),
+            }
+        }
+    }
+}
+
 /// Functions and declarations for general Key,Value Pair
 mod kv {
     use super::*;
@@ -420,7 +494,7 @@ mod outputs {
 }
 
 /// Functions and declarations for generating/overriding delimiters
-pub mod delims {
+mod delims {
     use super::*;
     use std::io::prelude::*;
     /// Represents the necessary delimiters for a `bashdoc`
