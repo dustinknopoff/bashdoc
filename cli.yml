@@ -1,6 +1,6 @@
 about: 'Creates a "javadoc" like structure for bash. See github repo github.com/dustinknopoff/bashdoc for information on formatting.'
 name: bashdoc
-version: "0.4.12"
+version: "0.5.0"
 args:
   - color:
       help: "toggles color"

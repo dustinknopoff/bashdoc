@@ -106,6 +106,7 @@
 //!- v0.4.10 - Support for windows file paths again
 //! - v0.4.11 - support for overriding global `.bashdocrc` within a directory.
 //! - v0.4.12 - descriptors can be split on ':' or whitespace
+//! - v0.5.0 - refactor for improved error handling/rust-ic code
 mod docs;
 use crate::docs::runners::*;
 use clap::{load_yaml, App};

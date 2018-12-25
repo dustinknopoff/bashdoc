@@ -1,10 +1,10 @@
 <a name=""></a>
 
-## Bashdoc (2018-12-23)
+## Bashdoc (2018-12-25)
 
-#### Breaking Changes
+#### Performance
 
-- **cli.yml:** Can provide a custom template for html documentation ([05936821](https://github.com/dustinknopoff/bashdoc/commit/059368217d8f155662a1ee3e156d0e0e373c2c03), breaks [#](https://github.com/dustinknopoff/bashdoc/issues/))
+- **generate_doc_file:** Parallelize Doc generation ([984e546e](https://github.com/dustinknopoff/bashdoc/commit/984e546e19aed5aec4ad91d6cf4b506b03c31d42))
 
 #### Bug Fixes
 
@@ -41,10 +41,6 @@
 - **screenshot:** ([87d31b24](https://github.com/dustinknopoff/bashdoc/commit/87d31b2469614f92ca1a42fa81d08d590692a610))
 - **static:** remove unnecessary CSS files ([38b6f064](https://github.com/dustinknopoff/bashdoc/commit/38b6f06476e8ecaba05c497cda3022bec6fa8d5d))
 
-#### Performance
-
-- **generate_doc_file:** Parallelize Doc generation ([984e546e](https://github.com/dustinknopoff/bashdoc/commit/984e546e19aed5aec4ad91d6cf4b506b03c31d42))
-
 #### Features
 
 - **Delimiters:** override global .bashdocrc within a directory ([45517f6d](https://github.com/dustinknopoff/bashdoc/commit/45517f6d7b2be21d3510c4c008cc63ea99653c12))
@@ -58,3 +54,7 @@
 - **script.js:**
   - Highlight clicked on function ([5bab275c](https://github.com/dustinknopoff/bashdoc/commit/5bab275cf8fb291934122d7bc9520733530a775b))
   - Highlight clicked on function ([b8d25409](https://github.com/dustinknopoff/bashdoc/commit/b8d25409d328ad1d282ba45c58b3a19f0630166b))
+
+#### Breaking Changes
+
+- **cli.yml:** Can provide a custom template for html documentation ([05936821](https://github.com/dustinknopoff/bashdoc/commit/059368217d8f155662a1ee3e156d0e0e373c2c03), breaks [#](https://github.com/dustinknopoff/bashdoc/issues/))
