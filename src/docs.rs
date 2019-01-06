@@ -66,13 +66,19 @@ pub mod runners {
                 exit(1);
             }
         };
-        let path: String = if cfg!(windows) {
-            String::from(matches.value_of("INPUT").unwrap())
-        } else {
-            matches
-                .value_of("INPUT")
+        let path: String = if matches.value_of("INPUT").unwrap().contains('~') {
+            home_dir()
+                .expect("Could not find home directory.")
+                .join(
+                    Path::new(matches.value_of("INPUT").unwrap())
+                        .strip_prefix("~")
+                        .expect("Could not strip shortcut."),
+                )
+                .to_str()
                 .unwrap()
-                .replace("~", home_dir().unwrap().to_str().unwrap())
+                .to_string()
+        } else {
+            String::from(matches.value_of("INPUT").unwrap())
         };
         watcher.watch(&path, RecursiveMode::Recursive).unwrap();
         println!("Watching for changes in {}...", path);
