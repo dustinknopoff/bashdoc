@@ -19,13 +19,13 @@ exclude = ["example/**", ".idea/**", "backdocrc.toml", ".clog.toml"]
 maintenance = { status = "experimental" }
 
 [dependencies]
-colored = "1.6.1"
+colored = "1.7.0"
 dirs = "1.0.4"
 clap = { version = "2.32.0", features = ["yaml"] }
 glob = "0.2.11"
 rayon = "1.0.3"
 serde = { version = "1.0.82", features = ["derive"] }
-serde_json = "1.0.33"
+serde_json = "1.0.34"
 toml = "0.4.10"
 nom = "4.1.1"
 handlebars = "1.1.0"
