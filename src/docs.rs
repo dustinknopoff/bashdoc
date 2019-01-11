@@ -131,7 +131,7 @@ mod kv {
     /// as_kv(example) // returns [KV {key: "filename", value: "don't test me"}]
     /// ```
     pub fn as_kv(input: &str) -> Result<KV, nom::ErrorKind> {
-        let parts: Vec<_> = if input.contains(":") {
+        let parts: Vec<_> = if input.contains(':') {
             input.split(": ").collect()
         } else {
             input.split_whitespace().collect()
