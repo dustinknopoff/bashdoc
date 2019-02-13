@@ -12,18 +12,49 @@ use nom::*;
 use nom_locate::{position, LocatedSpan};
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::Cow,
     collections::HashMap,
-    env, fs,
+    env,
+    error::Error,
+    fs,
     fs::File,
     path::{Path, PathBuf},
     process::exit,
 };
+
+/// Given a string, convert it into a valid Path that is canonical and absolute.
+pub fn make_path(raw: Cow<str>) -> PathBuf {
+    let mut path = PathBuf::from(raw.into_owned());
+    if path.starts_with("~") {
+        path = home_dir().expect("Could not find home directory.").join(
+            path.strip_prefix("~")
+                .expect("Could not remove ~ from file path."),
+        );
+    }
+    path.canonicalize().unwrap()
+}
 
 /// "Main" of bashdoc
 pub mod runners {
     use super::*;
     use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
     use std::{sync::mpsc::channel, time::Duration};
+
+    #[macro_use]
+    macro_rules! clap_match(
+        { $loc:expr, $default:expr, $($key:expr => $val:expr),+} => {
+            {
+                let m = $loc;
+                $(
+                    if m.is_present($key) {
+                        $val(m.value_of($key).unwrap())
+                    } else {
+                        $default("_")
+                    }
+                )+
+            }
+        }
+    );
 
     /// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
     pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
@@ -32,27 +63,31 @@ pub mod runners {
             _ => Delimiters::get_delims(),
         };
         let all_em = start(
-            matches.value_of("INPUT").expect("directory glob not found"),
+            Cow::Borrowed(matches.value_of("INPUT").expect("directory glob not found")),
             delims,
         )
         .unwrap();
-        if matches.is_present("json") {
-            write_json(&all_em, matches.value_of("json").unwrap());
-        } else if matches.is_present("location") {
-            to_html(
-                &all_em,
-                matches.value_of("location"),
-                matches.value_of("template"),
-            );
-        } else {
-            for doc in &all_em {
+        clap_match! {&matches,
+            Box::new(|_| {
+                for doc in &all_em {
                 if matches.is_present("color") {
                     printer(doc, true);
                 } else {
                     printer(doc, false);
                 }
             }
-        }
+            }),
+            "json" => Box::new(|s: &str| {
+                write_json(&all_em, s);
+            }),
+            "location" => Box::new(|s: &str| {
+                to_html(
+                    &all_em,
+                   Option::Some(s),
+                    matches.value_of("template"),
+                );
+            })
+        };
     }
 
     /// Given a request to watch files, Call `generate` on file write.
@@ -66,20 +101,10 @@ pub mod runners {
                 exit(1);
             }
         };
-        let path: String = if matches.value_of("INPUT").unwrap().contains('~') {
-            home_dir()
-                .expect("Could not find home directory.")
-                .join(
-                    Path::new(matches.value_of("INPUT").unwrap())
-                        .strip_prefix("~")
-                        .expect("Could not strip shortcut."),
-                )
-                .to_str()
-                .unwrap()
-                .to_string()
-        } else {
-            String::from(matches.value_of("INPUT").unwrap())
-        };
+        let path: String = make_path(Cow::Borrowed(matches.value_of("INPUT").unwrap()))
+            .to_str()
+            .unwrap()
+            .to_owned();
         watcher.watch(&path, RecursiveMode::Recursive).unwrap();
         println!("Watching for changes in {}...", path);
         loop {
@@ -288,14 +313,12 @@ mod docfile {
     pub fn get_strings_from_file<'a>(
         p: &Path,
         delims: Delimiters,
-    ) -> Result<Vec<Extracted<'a>>, String> {
-        let mut file = File::open(p).map_err(|e| e.to_string())?;
+    ) -> Result<Vec<Extracted<'a>>, Box<Error>> {
+        let mut file = File::open(p)?;
         let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .map_err(|e| e.to_string())?;
+        file.read_to_string(&mut contents)?;
         let used = Box::leak(contents.into_boxed_str());
-        let x = parse_strings_from_file(Span::new(CompleteStr(used)), delims)
-            .map_err(|err| err.to_string())?;
+        let x = parse_strings_from_file(Span::new(CompleteStr(used)), delims)?;
         Ok(x.1)
     }
 
@@ -316,36 +339,20 @@ mod docfile {
         all_docs
     }
 
-    fn extract_all_paths(p: &str) -> Result<Vec<PathBuf>, String> {
-        let as_path = Path::new(p);
-        let pth = if p.contains('~') {
-            home_dir().expect("Could not find home directory.").join(
-                as_path
-                    .strip_prefix("~")
-                    .expect("Could not strip shortcut."),
-            )
-        } else {
-            match as_path.canonicalize() {
-                Ok(o) => o,
-                Err(e) => {
-                    println!("{}", e.to_string());
-                    exit(1);
-                }
-            }
-        };
+    fn extract_all_paths(p: Cow<str>) -> Result<Vec<PathBuf>, String> {
         let files: Vec<_> = if p.contains('*') {
-            glob(pth.to_str().unwrap())
+            glob(make_path(p).to_str().unwrap())
                 .unwrap()
                 .filter_map(|x| x.ok())
                 .collect()
         } else {
-            vec![pth]
+            vec![make_path(p)]
         };
         Ok(files)
     }
 
     /// Given a file path and delimiters, generate a DocFile for all files requested.
-    pub fn start(p: &str, delims: Delimiters) -> Result<Vec<DocFile>, String> {
+    pub fn start(p: Cow<str>, delims: Delimiters) -> Result<Vec<DocFile>, String> {
         let x: Vec<PathBuf> = extract_all_paths(p).map_err(|e| e.to_string())?;
         Ok(x.par_iter()
             .map(|entry| {
@@ -468,7 +475,7 @@ mod outputs {
                 Some(m) => match File::open(m) {
                     Ok(o) => o,
                     Err(_) => {
-                        println!("Provided path is invalid");
+                        std::dbg!("Provided path is invalid");
                         exit(1);
                     }
                 },
@@ -481,7 +488,7 @@ mod outputs {
                         .expect("File could not be created")
                 }
                 None | Some(_) => {
-                    println!("Provided path is invalid");
+                    std::dbg!("Provided path is invalid");
                     exit(1);
                 }
             };

@@ -1,0 +1,340 @@
+{
+  "docs": [
+    {
+      "thedocs": [
+        {
+          "short_description": "sourcez",
+          "long_description": "re-initialize .zshrc file",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 27
+        },
+        {
+          "short_description": "zshconfig",
+          "long_description": "open .zshrc in VSCode",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 33
+        },
+        {
+          "short_description": "vimconfig",
+          "long_description": "open .vimrc in vim",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 39
+        },
+        {
+          "short_description": "docs",
+          "long_description": "shortcut to ~/Documents folder",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 48
+        },
+        {
+          "short_description": "svenv",
+          "long_description": "activate virtual python environment",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 54
+        },
+        {
+          "short_description": "update",
+          "long_description": "update Operating System, Brew, NPM, Applications, and Pip",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 64
+        },
+        {
+          "short_description": "cleanup",
+          "long_description": "remove .DS_Store files from current directory",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 70
+        },
+        {
+          "short_description": "emptytrash",
+          "long_description": "clean the trash",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 76
+        },
+        {
+          "short_description": "helpme",
+          "long_description": "access cht.sh for help with commands and languages",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 83
+        },
+        {
+          "short_description": "cloud",
+          "long_description": "shortcut to iCloud documents",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 89
+        },
+        {
+          "short_description": "notes",
+          "long_description": "shortcut to exported Notes",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 95
+        },
+        {
+          "short_description": "gits",
+          "long_description": "Shortcut to ~/Documents/Gits",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 101
+        },
+        {
+          "short_description": "csh",
+          "long_description": "Shortcut to CCIS Servers",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 107
+        },
+        {
+          "short_description": "glsnips()",
+          "long_description": "Display descriptions of all Dash Snippets",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "filter",
+              "value": "Optional keyword to fuzzy search"
+            }
+          ],
+          "returns": [],
+          "position": 138
+        },
+        {
+          "short_description": "bip()",
+          "long_description": "Fuzzy search brew",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 168
+        },
+        {
+          "short_description": "allgits()",
+          "long_description": "Git add, commit, and push",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "msg",
+              "value": "commit message"
+            }
+          ],
+          "returns": [],
+          "position": 183
+        },
+        {
+          "short_description": "fs()",
+          "long_description": "Fuzzy file and directory search",
+          "descriptors": [
+            {
+              "key": "CTRL-O",
+              "value": "to open with `open` command,"
+            },
+            {
+              "key": "CTRL-E",
+              "value": "or Enter key to open with the $EDITOR"
+            },
+            {
+              "key": "CTRL-S",
+              "value": "to search inside files"
+            },
+            {
+              "key": "CTRL-C",
+              "value": "to copy file path to clipboard"
+            },
+            {
+              "key": "CTRL-D",
+              "value": "to cd to directory of file"
+            },
+            {
+              "key": "CTRL-N",
+              "value": "to make a new markdown file."
+            }
+          ],
+          "params": [],
+          "returns": [],
+          "position": 212
+        },
+        {
+          "short_description": "2mp4()",
+          "long_description": "Convert from gif or webm to mp4 for all in current directory",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "type",
+              "value": "mp4 or gif"
+            }
+          ],
+          "returns": [],
+          "position": 258
+        },
+        {
+          "short_description": "gitrm()",
+          "long_description": "Remove an unwanted watched folder",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "filename",
+              "value": "file type to be removed from this folder"
+            }
+          ],
+          "returns": [],
+          "position": 275
+        },
+        {
+          "short_description": "pygnore()",
+          "long_description": "Generate a .gitignore file for python projects",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 284
+        },
+        {
+          "short_description": "fbr()",
+          "long_description": "Fuzzy search git branches",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 293
+        },
+        {
+          "short_description": "fshow()",
+          "long_description": "Preview git tree",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 306
+        },
+        {
+          "short_description": "fstat()",
+          "long_description": "Show uncommitted files",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 323
+        },
+        {
+          "short_description": "gi()",
+          "long_description": ".gitignore file generator",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "list",
+              "value": "list of types to generator gitignore of"
+            }
+          ],
+          "returns": [],
+          "position": 345
+        },
+        {
+          "short_description": "setgit()",
+          "long_description": "Initialize a git directory",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "giturl",
+              "value": "url of git repo push to"
+            }
+          ],
+          "returns": [],
+          "position": 367
+        },
+        {
+          "short_description": "gup()",
+          "long_description": "set up stream of passed in branch to origin",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "branch",
+              "value": "name of branch"
+            }
+          ],
+          "returns": [],
+          "position": 376
+        },
+        {
+          "short_description": "psman()",
+          "long_description": "Open man page in Preview.app",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "cli",
+              "value": "command line function to call man on"
+            }
+          ],
+          "returns": [],
+          "position": 386
+        },
+        {
+          "short_description": "ppundo()",
+          "long_description": "Fuzzy search for recent packages installed. On selection, uninstall",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "pkg",
+              "value": "package manager (npm, pip, cargo, etc.)"
+            }
+          ],
+          "returns": [],
+          "position": 395
+        },
+        {
+          "short_description": "fop()",
+          "long_description": "Fuzzy search 1Password",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 406
+        },
+        {
+          "short_description": "cdoc()",
+          "long_description": "Generate private cargo documentation with no dependencies",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 417
+        },
+        {
+          "short_description": "cmds()",
+          "long_description": "fuzzy search for a command",
+          "descriptors": [],
+          "params": [],
+          "returns": [],
+          "position": 430
+        },
+        {
+          "short_description": "csearch()",
+          "long_description": "fuzzy search cargo",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "name",
+              "value": "name to search cargo for"
+            }
+          ],
+          "returns": [],
+          "position": 439
+        }
+      ],
+      "filename": ".zshrc"
+    }
+  ]
+}
