@@ -207,16 +207,16 @@ mod doc {
                     take_until_and_consume!(delims.comm),
                     take_until_and_consume!("\n")
                 ))
-                >> desc: opt!(many0!(complete!(map_res!(
+                >> par: opt!(many0!(complete!(map_res!(
                     preceded!(
-                        take_until_and_consume!(delims.opt),
+                        take_until_and_consume!(delims.params),
                         take_until_and_consume!("\n")
                     ),
                     as_kv
                 ))))
-                >> par: opt!(many0!(complete!(map_res!(
+                >> desc: opt!(many0!(complete!(map_res!(
                     preceded!(
-                        take_until_and_consume!(delims.params),
+                        take_until_and_consume!(delims.opt),
                         take_until_and_consume!("\n")
                     ),
                     as_kv
@@ -669,5 +669,24 @@ mod tests {
                 }]
             );
         }
+    }
+
+    #[test]
+    fn param_and_input() {
+        let sample = "#\"
+        # mp()
+        # Convert from markdown to docx
+        # @param input: markdown file to convert
+        # - MSG: the message to pass
+        #;
+        ";
+        let delims = Delimiters::get_delims();
+        let x = Extracted {
+            content: sample.into(),
+            position: Span::new(CompleteStr(sample))
+        };
+
+        let val = generate_doc_file(&[x], Path::new("/example.txt"), delims);
+        println!("{:#?}", val);
     }
 }
