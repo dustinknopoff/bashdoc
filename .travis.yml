@@ -17,6 +17,6 @@ deploy:
       tags: true
       condition: "$TRAVIS_RUST_VERSION = stable"
       branch: master
-    file: target/release/watchdog # where `watchdog` is your built rust binary
+    file: target/release/bashdoc # where `watchdog` is your built rust binary
     api_token:
       secure: # this part from your `travis encrypt` command
