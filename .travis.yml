@@ -3,6 +3,7 @@ rust:
   - stable
   - beta
   - nightly
+cache: cargo
 matrix:
   allow_failures:
     - rust: nightly
@@ -10,6 +11,8 @@ matrix:
 os:
   - linux
   - osx
+before_deploy:
+  - mv target/release/bashdoc "target/release/bashdoc-$TRAVIS_TAG-$TRAVIS_OS_NAME"
 deploy:
   - provider: releases
     skip_cleanup: true
@@ -17,6 +20,7 @@ deploy:
       tags: true
       condition: "$TRAVIS_RUST_VERSION = stable"
       branch: master
-    file: target/release/bashdoc # where `watchdog` is your built rust binary
-    api_token:
-      secure: # this part from your `travis encrypt` command
+    file:
+      - target/release/bashdoc-*
+    api_key:
+      secure: # ;)
