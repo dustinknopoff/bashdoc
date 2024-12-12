@@ -8,7 +8,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 27
+          "position": 26
         },
         {
           "short_description": "zshconfig",
@@ -16,7 +16,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 33
+          "position": 32
         },
         {
           "short_description": "vimconfig",
@@ -24,7 +24,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 39
+          "position": 38
         },
         {
           "short_description": "docs",
@@ -32,7 +32,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 48
+          "position": 47
         },
         {
           "short_description": "svenv",
@@ -40,7 +40,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 54
+          "position": 53
         },
         {
           "short_description": "update",
@@ -48,7 +48,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 64
+          "position": 63
         },
         {
           "short_description": "cleanup",
@@ -56,7 +56,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 70
+          "position": 69
         },
         {
           "short_description": "emptytrash",
@@ -64,7 +64,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 76
+          "position": 75
         },
         {
           "short_description": "helpme",
@@ -72,7 +72,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 83
+          "position": 82
         },
         {
           "short_description": "cloud",
@@ -80,7 +80,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 89
+          "position": 88
         },
         {
           "short_description": "notes",
@@ -88,7 +88,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 95
+          "position": 94
         },
         {
           "short_description": "gits",
@@ -96,15 +96,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 101
-        },
-        {
-          "short_description": "csh",
-          "long_description": "Shortcut to CCIS Servers",
-          "descriptors": [],
-          "params": [],
-          "returns": [],
-          "position": 107
+          "position": 100
         },
         {
           "short_description": "glsnips()",
@@ -117,7 +109,7 @@
             }
           ],
           "returns": [],
-          "position": 138
+          "position": 125
         },
         {
           "short_description": "bip()",
@@ -125,7 +117,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 168
+          "position": 151
         },
         {
           "short_description": "allgits()",
@@ -138,7 +130,20 @@
             }
           ],
           "returns": [],
-          "position": 183
+          "position": 166
+        },
+        {
+          "short_description": "xi()",
+          "long_description": "Open a document in Xi",
+          "descriptors": [],
+          "params": [
+            {
+              "key": "path",
+              "value": "file path to open"
+            }
+          ],
+          "returns": [],
+          "position": 175
         },
         {
           "short_description": "fs()",
@@ -171,7 +176,7 @@
           ],
           "params": [],
           "returns": [],
-          "position": 212
+          "position": 200
         },
         {
           "short_description": "2mp4()",
@@ -184,7 +189,7 @@
             }
           ],
           "returns": [],
-          "position": 258
+          "position": 246
         },
         {
           "short_description": "gitrm()",
@@ -197,7 +202,7 @@
             }
           ],
           "returns": [],
-          "position": 275
+          "position": 263
         },
         {
           "short_description": "pygnore()",
@@ -205,7 +210,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 284
+          "position": 272
         },
         {
           "short_description": "fbr()",
@@ -213,7 +218,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 293
+          "position": 281
         },
         {
           "short_description": "fshow()",
@@ -221,7 +226,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 306
+          "position": 294
         },
         {
           "short_description": "fstat()",
@@ -229,7 +234,7 @@
           "descriptors": [],
           "params": [],
           "returns": [],
-          "position": 323
+          "position": 311
         },
         {
           "short_description": "gi()",
@@ -242,7 +247,7 @@
             }
           ],
           "returns": [],
-          "position": 345
+          "position": 333
         },
         {
           "short_description": "setgit()",
@@ -255,7 +260,7 @@
             }
           ],
           "returns": [],
-          "position": 367
+          "position": 343
         },
         {
           "short_description": "gup()",
@@ -268,7 +273,7 @@
             }
           ],
           "returns": [],
-          "position": 376
+          "position": 352
         },
         {
           "short_description": "psman()",
@@ -281,60 +286,10 @@
             }
           ],
           "returns": [],
-          "position": 386
-        },
-        {
-          "short_description": "ppundo()",
-          "long_description": "Fuzzy search for recent packages installed. On selection, uninstall",
-          "descriptors": [],
-          "params": [
-            {
-              "key": "pkg",
-              "value": "package manager (npm, pip, cargo, etc.)"
-            }
-          ],
-          "returns": [],
-          "position": 395
-        },
-        {
-          "short_description": "fop()",
-          "long_description": "Fuzzy search 1Password",
-          "descriptors": [],
-          "params": [],
-          "returns": [],
-          "position": 406
-        },
-        {
-          "short_description": "cdoc()",
-          "long_description": "Generate private cargo documentation with no dependencies",
-          "descriptors": [],
-          "params": [],
-          "returns": [],
-          "position": 417
-        },
-        {
-          "short_description": "cmds()",
-          "long_description": "fuzzy search for a command",
-          "descriptors": [],
-          "params": [],
-          "returns": [],
-          "position": 430
-        },
-        {
-          "short_description": "csearch()",
-          "long_description": "fuzzy search cargo",
-          "descriptors": [],
-          "params": [
-            {
-              "key": "name",
-              "value": "name to search cargo for"
-            }
-          ],
-          "returns": [],
-          "position": 439
+          "position": 362
         }
       ],
-      "filename": ".zshrc"
+      "filename": "zshrc"
     }
   ]
 }

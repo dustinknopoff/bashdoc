@@ -40,22 +40,6 @@ pub mod runners {
     use notify::{DebouncedEvent, RecommendedWatcher, RecursiveMode, Watcher};
     use std::{sync::mpsc::channel, time::Duration};
 
-    #[macro_use]
-    macro_rules! clap_match(
-        { $loc:expr, $default:expr, $($key:expr => $val:expr),+} => {
-            {
-                let m = $loc;
-                $(
-                    if m.is_present($key) {
-                        $val(m.value_of($key).unwrap())
-                    } else {
-                        $default("_")
-                    }
-                )+
-            }
-        }
-    );
-
     /// Given the arguments received via CLI from clap, setup and run with requested delimiters, file or directory, etc.
     pub fn generate<'a>(matches: &'a ArgMatches<'a>) {
         let delims = match matches.subcommand() {
@@ -67,26 +51,22 @@ pub mod runners {
             delims,
         )
         .unwrap();
-        clap_match! {&matches,
-            Box::new(|_| {
-                for doc in &all_em {
+        if matches.is_present("json") {
+            write_json(&all_em, matches.value_of("json").unwrap());
+        } else if matches.is_present("location") {
+            to_html(
+                &all_em,
+                Option::Some(matches.value_of("location").unwrap()),
+                matches.value_of("template"),
+            );
+        } else {
+            for doc in &all_em {
                 if matches.is_present("color") {
                     printer(doc, true);
                 } else {
                     printer(doc, false);
                 }
             }
-            }),
-            "json" => Box::new(|s: &str| {
-                write_json(&all_em, s);
-            }),
-            "location" => Box::new(|s: &str| {
-                to_html(
-                    &all_em,
-                   Option::Some(s),
-                    matches.value_of("template"),
-                );
-            })
         };
     }
 
@@ -110,7 +90,7 @@ pub mod runners {
         loop {
             match rx.recv() {
                 Ok(event) => {
-                    generate(&matches);
+                    generate(matches);
                     if let DebouncedEvent::Write(e) = event {
                         println!(
                             "Bashdoc updated to match changes to {}.",
@@ -194,7 +174,7 @@ mod doc {
     }
 
     /// Nom function to convert a given string in to a `Doc`
-    #[allow(clippy::cyclomatic_complexity)]
+    #[allow(clippy::cognitive_complexity)]
     pub fn parse_doc<'a>(input: &'a str, delims: Delimiters) -> IResult<&'a str, Doc> {
         do_parse!(
             input,
@@ -313,7 +293,7 @@ mod docfile {
     pub fn get_strings_from_file<'a>(
         p: &Path,
         delims: Delimiters,
-    ) -> Result<Vec<Extracted<'a>>, Box<Error>> {
+    ) -> Result<Vec<Extracted<'a>>, Box<dyn Error>> {
         let mut file = File::open(p)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
@@ -328,8 +308,10 @@ mod docfile {
         fname: &Path,
         delims: Delimiters,
     ) -> DocFile {
-        let mut all_docs: DocFile = Default::default();
-        all_docs.filename = String::from(fname.file_stem().unwrap().to_str().unwrap());
+        let mut all_docs: DocFile = DocFile {
+            filename: String::from(fname.file_stem().unwrap().to_str().unwrap()),
+            ..Default::default()
+        };
         let collected: Vec<Doc> = docs
             .par_iter()
             .filter(|x| !x.content.is_empty())
@@ -356,14 +338,14 @@ mod docfile {
         let x: Vec<PathBuf> = extract_all_paths(p).map_err(|e| e.to_string())?;
         Ok(x.par_iter()
             .map(|entry| {
-                let docs = match get_strings_from_file(&entry, delims) {
+                let docs = match get_strings_from_file(entry, delims) {
                     Ok(o) => o,
                     Err(e) => {
-                        println!("{}", e.to_string());
+                        println!("{}", e);
                         exit(1);
                     }
                 };
-                generate_doc_file(&docs, &entry, delims)
+                generate_doc_file(&docs, entry, delims)
             })
             .collect())
     }
@@ -463,7 +445,7 @@ mod outputs {
         };
         let path = Path::new(&path_as_str);
         let mut file = File::create(Path::new(&path)).expect("Invalid file path.");
-        file.write_all(&json.as_bytes())
+        file.write_all(json.as_bytes())
             .expect("Could not write to file.");
     }
 
@@ -564,7 +546,7 @@ mod delims {
                 let mut to_convert = String::new();
                 to_convert.push_str(&contents);
                 let as_static: &'static str = Box::leak(to_convert.into_boxed_str());
-                let sorted: Delimiters = toml::from_str(&as_static).unwrap();
+                let sorted: Delimiters = toml::from_str(as_static).unwrap();
                 sorted
             } else {
                 match env::var_os("BASHDOC_CONFIG_PATH") {
@@ -576,7 +558,7 @@ mod delims {
                         let mut to_convert = String::new();
                         to_convert.push_str(&contents);
                         let as_static: &'static str = Box::leak(to_convert.into_boxed_str());
-                        let sorted: Delimiters = toml::from_str(&as_static).unwrap();
+                        let sorted: Delimiters = toml::from_str(as_static).unwrap();
                         sorted
                     }
                     None => {
@@ -683,7 +665,7 @@ mod tests {
         let delims = Delimiters::get_delims();
         let x = Extracted {
             content: sample.into(),
-            position: Span::new(CompleteStr(sample))
+            position: Span::new(CompleteStr(sample)),
         };
 
         let val = generate_doc_file(&[x], Path::new("/example.txt"), delims);
